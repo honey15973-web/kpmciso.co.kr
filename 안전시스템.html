@@ -1,0 +1,1198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">import React, { useState, useEffect } from 'react';</p>
+<p class="p1">import { initializeApp } from 'firebase/app';</p>
+<p class="p1">import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';</p>
+<p class="p1">import { getFirestore, doc, setDoc, collection, onSnapshot } from 'firebase/firestore';</p>
+<p class="p1">import {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>FolderOpen,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>FileText,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>CheckCircle,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>Circle,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>Clock,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>Download,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>Upload,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>Save,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>BarChart,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>ChevronRight,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>ShieldCheck,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>FileDown,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Search,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Plus,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>X,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>History,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Bold,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Italic,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Heading,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>List as ListIcon,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Lightbulb,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>MessageSquare,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Users,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Building,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Key,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>LogOut,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>ArrowLeft,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Settings,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>User,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Lock</p>
+<p class="p1">} from 'lucide-react';</p>
+<p class="p2"><br></p>
+<p class="p1">// Firebase 초기화 설정</p>
+<p class="p1">const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};</p>
+<p class="p1">const app = initializeApp(firebaseConfig);</p>
+<p class="p1">const auth = getAuth(app);</p>
+<p class="p1">const db = getFirestore(app);</p>
+<p class="p1">const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';</p>
+<p class="p2"><br></p>
+<p class="p1">// KPMC 로고 컴포넌트</p>
+<p class="p1">const KpmcLogo = () =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div className="flex items-center select-none bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span className="text-[#4DB6AC] font-black text-2xl tracking-tighter"&gt;K&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span className="text-slate-800 font-black text-2xl tracking-tighter"&gt;PMC&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">);</p>
+<p class="p2"><br></p>
+<p class="p1">// ISO 45001 필수 문서화 정보 (초기 데이터)</p>
+<p class="p1">const initialIsoData = [</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '4',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '4. 조직의 상황 (Context)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '4.3', title: '안전보건경영시스템의 적용범위', content: '', status: 'not_started', requirements: '조직의 활동, 제품, 서비스 및 관련 시설을 포함한 시스템 적용범위 명시', example: '### 1. 목적\n본 문서는 당사의 안전보건경영시스템(OH&amp;SMS)이 적용되는 범위와 경계를 명확히 규정함을 목적으로 한다.\n\n### 2. 적용 범위\n당사의 모든 사업장, 제품 생산, 서비스 제공 활동 및 관련 부대시설에 적용된다.\n- 사업장 위치: [본사/공장 주소 입력]\n- 적용 활동: [주요 생산품 또는 서비스 명 입력]의 설계, 개발, 생산 및 부가 서비스\n- 제외 대상: 당사의 물리적 통제 범위를 벗어난 외부 협력업체 구역', feedback: 'KPMC 코멘트: 적용 범위 작성 시, 본사와 공장 외에 외주 창고가 있다면 반드시 포함하여 기재해 주시기 바랍니다.' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '5',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '5. 리더십 및 근로자 참여 (Leadership)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '5.2', title: '안전보건 방침', content: '', status: 'not_started', requirements: '안전하고 건강한 작업조건 제공을 위한 경영진의 의지 표명', example: '## [회사명] 안전보건 방침\n\n㈜[회사명]은 인간존중의 이념을 바탕으로 모든 근로자와 이해관계자의 생명과 건강을 보호하는 것을 기업 경영의 최우선 가치로 삼는다. 이를 위해 다음과 같이 안전보건 방침을 선언하고 적극 실천한다.\n\n1. **안전보건 경영 최우선**: 모든 경영활동에서 안전과 보건을 최우선으로 고려한다.\n2. **법규 준수**: 안전보건 관계 법령 및 조직이 동의한 기타 요구사항을 엄격히 준수한다.\n3. **위해위험요인 제거**: 잠재된 유해·위험요인을 사전에 파악하고 지속 개선한다.\n\n[년도]년 [월]일\n㈜[회사명] 대표이사 [이름] (서명)' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '5.3', title: '조직의 역할, 책임 및 권한', content: '', status: 'not_started', requirements: '시스템 내 각 인원의 역할, 책임, 권한에 대한 할당 및 문서화', example: '### 1. 대표이사 (최고경영자)\n- 안전보건경영시스템의 전반적인 책임과 권한\n- 운영 자원(인력, 예산 등) 제공\n\n### 2. 안전보건 관리책임자 (공장장 등)\n- 시스템의 수립, 실행 및 유지 관리\n- 안전보건 성과에 대한 경영검토 보고' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '6',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '6. 기획 (Planning)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '6.1.1', title: '리스크 및 기회', content: '', status: 'not_started', requirements: '파악된 리스크 및 기회, 이를 다루기 위한 조치 계획', example: 'KPMC 작성 예시:\n- 리스크 1: 고소작업 증가에 따른 추락 위험 (대책: 스마트 안전고리 도입)\n- 기회 1: 안전보건관리체계 인증에 따른 기업 신뢰도 상승' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '6.1.2', title: '위험성 평가 방법론 및 기준', content: '', status: 'not_started', requirements: '유해위험요인 파악 및 위험성 평가를 위한 기준과 방법', example: 'KPMC 제공: 위험성평가는 빈도(가능성)와 강도(중대성)를 5x5 매트릭스로 평가하며 10점 이상의 위험은 수용 불가한 위험(Unacceptable Risk)으로 분류하여 즉시 조치한다.' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '6.1.3', title: '법적 및 기타 요구사항', content: '', status: 'not_started', requirements: '적용되는 안전보건 관련 법규 및 요구사항 파악 목록', example: 'KPMC 가이드: \n1. 산업안전보건법 관련 조항\n2. 중대재해처벌법 및 시행령\n3. 소방기본법 등' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '6.2.2', title: '안전보건 목표 및 달성 계획', content: '', status: 'not_started', requirements: '측정 가능한 안전보건 목표 및 구체적인 실행 계획', example: 'KPMC 템플릿: \n- KPI 1: 재해율 0.05% 이하 달성\n- KPI 2: 아차사고 발굴률 전년 대비 15% 향상' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '7',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '7. 지원 (Support)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '7.2', title: '적격성 증거 (교육훈련 기록)', content: '', status: 'not_started', requirements: '근로자의 안전보건 역량, 교육, 훈련, 경험에 대한 기록', example: 'KPMC 예시: 연간 교육훈련 계획서 요약 및 법정의무교육(정기안전보건교육, 특별교육) 이수 현황표 등.' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '7.4', title: '의사소통 기록', content: '', status: 'not_started', requirements: '내부 및 외부 의사소통 절차 및 주요 의사소통 증빙', example: 'KPMC 예시: 매월 1회 노사협의체 회의록 첨부 양식 및 근로자 건의함 관리 대장.' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '8',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '8. 운용 (Operation)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '8.1', title: '운용 기획 및 관리 기준', content: '', status: 'not_started', requirements: '안전한 작업 수행을 위한 프로세스 및 운용 기준 설정', example: 'KPMC 템플릿: 도급업체 안전보건 관리지침\n1. 적격 수급인 선정 절차\n2. 도급 작업 안전관리 기준 및 패널티' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '8.2', title: '비상사태 대비 및 대응 프로세스', content: '', status: 'not_started', requirements: '잠재적 비상사태 대응 절차 및 모의훈련 계획/결과', example: 'KPMC 가이드: \n[시나리오 1] 제조라인 A구역 화재 발생\n- 대피 경로도\n- 소방서 연락망\n- 자위소방대 역할 분담표' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '9',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '9. 성과 평가 (Performance Evaluation)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '9.1.1', title: '모니터링, 측정, 분석 및 평가 결과', content: '', status: 'not_started', requirements: '안전보건 성과 측정 지표 및 분석 결과, 장비 교정 기록', example: 'KPMC 예시: 반기별 작업환경측정 결과 및 안전설비(환풍기, 가스탐지기) 월간 점검 체크리스트' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '9.1.2', title: '준수평가 결과', content: '', status: 'not_started', requirements: '법적 및 기타 요구사항 준수 여부 정기 평가 결과', example: 'KPMC 체크리스트: \n- 조항 38조 (안전조치): 이행 완료 (100%)\n- 조항 114조 (물질안전보건자료의 게시): 보완 필요 (80%)' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '9.2.2', title: '내부심사 프로그램 및 결과', content: '', status: 'not_started', requirements: '내부심사 계획, 심사원 적격성, 심사 결과 보고서', example: 'KPMC 템플릿: \n- 심사 일자: 202X년 X월 X일\n- 심사원: OOO 심사원\n- 발견사항(CAR): 보호구 미착용 1건 (시정조치 요망)' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '9.3', title: '경영검토 결과', content: '', status: 'not_started', requirements: '최고경영자의 시스템 적합성, 충족성, 유효성 검토 회의록', example: 'KPMC 예시: 전년도 사고 및 아차사고 동향 분석, 경영검토 지시사항 기록 템플릿' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: '10',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>title: '10. 개선 (Improvement)',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>documents: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '10.2.a', title: '사건 및 부적합성, 시정조치 내용', content: '', status: 'not_started', requirements: '사고/아차사고 조사 결과 및 발생한 부적합 사항 기록', example: 'KPMC 제공: 5Why 기법을 활용한 근본원인 조사표 및 부적합 보고서(NCR) 서식' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '10.2.b', title: '시정조치 결과 및 효과성 평가', content: '', status: 'not_started', requirements: '취해진 조치의 결과 및 재발방지 효과에 대한 검증', example: 'KPMC 템플릿: 조치 후 3개월 모니터링 경과보고. 재발 없으므로 해당 시정조치 종결(Close).' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ id: '10.3', title: '지속적 개선 증거', content: '', status: 'not_started', requirements: '안전보건 성과 향상을 위한 지속적 개선 활동 결과', example: 'KPMC 작성 예시: 사업장 안전 개선 제안(Smart Safety) 우수사례 및 포상 내역 증빙' },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">export default function App() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 인증 및 라우팅 상태</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [appMode, setAppMode] = useState('login'); // 'login', 'admin', 'system'</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [isAdmin, setIsAdmin] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [currentCompany, setCurrentCompany] = useState(null);</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 데이터 상태</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [user, setUser] = useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [companies, setCompanies] = useState([]);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [systemData, setSystemData] = useState(initialIsoData);</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// UI 컨트롤 상태</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [activeClauseId, setActiveClauseId] = useState(initialIsoData[0].id);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [activeDocId, setActiveDocId] = useState(initialIsoData[0].documents[0].id);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [toastMessage, setToastMessage] = useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [viewMode, setViewMode] = useState('editor'); // 'editor', 'dashboard'</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [searchQuery, setSearchQuery] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [isAddModalOpen, setIsAddModalOpen] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [targetClauseId, setTargetClauseId] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [newDoc, setNewDoc] = useState({ id: '', title: '', requirements: '' });</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [isSyncing, setIsSyncing] = useState(false);</p>
+<p class="p2"><span class="Apple-converted-space">  </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 로그인용 임시 폼 상태</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [loginCode, setLoginCode] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [newCompanyName, setNewCompanyName] = useState('');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 관리자 로그인 및 설정용 상태 추가</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [adminIdInput, setAdminIdInput] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [adminPwInput, setAdminPwInput] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [adminConfig, setAdminConfig] = useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [editAdminId, setEditAdminId] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const [editAdminPw, setEditAdminPw] = useState('');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getCurrentDate = () =&gt; new Date().toISOString().slice(0, 10);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 1. Firebase 인증 초기화</p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const initAuth = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (typeof __initial_auth_token !== 'undefined' &amp;&amp; __initial_auth_token) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>await signInWithCustomToken(auth, __initial_auth_token);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>await signInAnonymously(auth);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.error("인증 실패:", error);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>initAuth();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribe = onAuthStateChanged(auth, setUser);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, []);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 2. 관리자용 전체 고객사 목록 실시간 구독</p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const compRef = collection(db, 'artifacts', appId, 'public', 'data', 'companies');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribe = onSnapshot(compRef, (snap) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const compData = snap.docs.map(d =&gt; ({ id: d.id, ...d.data() }));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setCompanies(compData);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}, (error) =&gt; console.error("고객사 목록 구독 오류:", error));</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [user]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 관리자 계정 정보 실시간 구독 및 초기화 (Firestore 동기화)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admin_settings');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribe = onSnapshot(configRef, (docSnap) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (docSnap.exists()) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setAdminConfig(docSnap.data());</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 최초 접속 시 기본 관리자 계정 생성</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const defaultConfig = { adminId: 'admin', adminPw: 'kpmc1234' };</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setDoc(configRef, defaultConfig);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setAdminConfig(defaultConfig);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}, (error) =&gt; console.error("관리자 설정 구독 오류:", error));</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [user]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 3. 특정 고객사의 ISO 시스템 데이터 실시간 구독</p>
+<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!user || !currentCompany) return;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'company_data', currentCompany.id);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribe = onSnapshot(docRef, (docSnap) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (docSnap.exists()) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setSystemData(docSnap.data().systemData);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 새 고객사의 경우 초기 데이터 세팅</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setSystemData(initialIsoData);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}, (error) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.error("Firestore 구독 오류:", error);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('고객사 데이터를 불러오는 중 오류가 발생했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, [user, currentCompany]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const showToast = (message) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setToastMessage(message);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; setToastMessage(null), 3000);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// KPMC 관리자 로그인 처리 (Firestore 데이터 기반 검증)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleAdminLogin = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!adminConfig) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('서버 설정을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (adminIdInput === adminConfig.adminId &amp;&amp; adminPwInput === adminConfig.adminPw) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setIsAdmin(true);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setAppMode('admin');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setAdminIdInput('');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setAdminPwInput('');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('관리자 포털에 접속했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('아이디 또는 비밀번호가 일치하지 않습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// KPMC 관리자 계정 정보 변경</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleUpdateAdminConfig = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!editAdminId.trim() || !editAdminPw.trim()) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return showToast('아이디와 비밀번호를 모두 입력해주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admin_settings');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>await setDoc(configRef, { adminId: editAdminId, adminPw: editAdminPw });</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setIsSettingsModalOpen(false);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('관리자 계정 정보가 성공적으로 변경되었습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.error(e);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('계정 정보 변경 중 오류가 발생했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 고객사 접속 코드 로그인 처리</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleClientLogin = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!loginCode.trim()) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('접속 코드를 입력해주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const comp = companies.find(c =&gt; c.code === loginCode.trim());</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (comp) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setCurrentCompany(comp);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setIsAdmin(false);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setAppMode('system');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast(`${comp.name} 시스템에 접속했습니다.`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('유효하지 않은 고객사 코드입니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 로그아웃 처리</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleLogout = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setCurrentCompany(null);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setIsAdmin(false);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setAppMode('login');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setLoginCode('');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// KPMC: 신규 고객사 등록</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleAddCompany = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return showToast('서버 연결을 확인해주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!newCompanyName.trim()) return showToast('고객사명을 입력해주세요.');</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 6자리 랜덤 코드 생성</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const code = Math.floor(100000 + Math.random() * 900000).toString();</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const newRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'companies'));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>await setDoc(newRef, {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>name: newCompanyName,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>code: code,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>createdAt: getCurrentDate()<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setNewCompanyName('');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast(`${newCompanyName} 고객사가 등록되었습니다.`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('등록 중 오류가 발생했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.error(e);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 문서 변경 핸들러</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleDocumentChange = (clauseId, docId, field, value) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const newData = systemData.map(clause =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (clause.id === clauseId) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>...clause,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>documents: clause.documents.map(doc =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (doc.id === docId) {</p>
+<p class="p1"><span class="Apple-converted-space">              </span>return { ...doc, [field]: value };</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return doc;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>})</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return clause;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSystemData(newData);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 서버에 데이터 동기화</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const saveToServer = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!user || !currentCompany) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('서버에 연결되어 있지 않습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setIsSyncing(true);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'company_data', currentCompany.id);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>await setDoc(docRef, { systemData });</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('서버에 성공적으로 동기화되었습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.error("저장 오류:", error);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast('서버 저장 중 오류가 발생했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} finally {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>setIsSyncing(false);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 1. JSON 내보내기 (데이터 백업용)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const exportDataJson = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const dataStr = JSON.stringify(systemData, null, 2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const exportFileDefaultName = `${currentCompany.name}_ISO45001_${getCurrentDate()}.json`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const linkElement = document.createElement('a');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.setAttribute('href', dataUri);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.setAttribute('download', exportFileDefaultName);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.click();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast('JSON 데이터가 내보내졌습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 2. 텍스트 리포트 내보내기 (실제 컨설팅 제출/보고용)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const exportDataReport = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let reportText = "=========================================\n";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>reportText += ` <span class="Apple-converted-space">  </span>[${currentCompany.name}] ISO 45001 안전보건경영시스템 문서화\n`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>reportText += "=========================================\n\n";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>systemData.forEach(clause =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>reportText += `[ ${clause.title} ]\n\n`;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>clause.documents.forEach(doc =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const statusText = doc.status === 'completed' || doc.status === 'approved' ? '승인완료' : doc.status === 'review' ? '검토중' : '작성전';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reportText += `▶ 문서명: ${doc.title} (조항 ${doc.id}) - [${statusText}]\n`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reportText += `▶ 요구사항: ${doc.requirements}\n`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reportText += `-----------------------------------------\n`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reportText += `${doc.content ? doc.content : '내용이 없습니다.'}\n\n`;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>reportText += "\n";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportText);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const exportFileDefaultName = `${currentCompany.name}_ISO45001_Report_${getCurrentDate()}.txt`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const linkElement = document.createElement('a');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.setAttribute('href', dataUri);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.setAttribute('download', exportFileDefaultName);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>linkElement.click();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast('리포트 문서가 내보내졌습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const importDataJson = (event) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const fileReader = new FileReader();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>fileReader.readAsText(event.target.files[0], "UTF-8");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>fileReader.onload = e =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const importedData = JSON.parse(e.target.result);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setSystemData(importedData);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>showToast('데이터를 성공적으로 불러왔습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>showToast('잘못된 파일 형식입니다.');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 자율 문서 추가 기능</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleAddDocument = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!newDoc.id || !newDoc.title) return showToast('문서 번호와 제목을 입력해주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const newData = systemData.map(clause =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (clause.id === targetClauseId) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>...clause,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>documents: [...clause.documents, {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>...newDoc, content: '', status: 'draft', version: '1.0', lastModified: getCurrentDate(),</p>
+<p class="p1"><span class="Apple-converted-space">            </span>example: 'KPMC 예시: 새로 추가된 규정 또는 절차서에 맞는 내용을 이 영역에 기입하십시오.'</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return clause;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSystemData(newData);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setIsAddModalOpen(false);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setNewDoc({ id: '', title: '', requirements: '' });</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setActiveClauseId(targetClauseId);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setActiveDocId(newDoc.id);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setViewMode('editor');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast('새로운 문서가 추가되었습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const insertMarkdown = (prefix, suffix = '') =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const textarea = document.getElementById('document-editor');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!textarea) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const start = textarea.selectionStart;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const end = textarea.selectionEnd;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const activeDoc = systemData.find(c =&gt; c.id === activeClauseId)?.documents.find(d =&gt; d.id === activeDocId);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const text = activeDoc?.content || '';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const before = text.substring(0, start);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const selected = text.substring(start, end);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const after = text.substring(end);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const newText = before + prefix + selected + suffix + after;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>handleDocumentChange(activeClauseId, activeDocId, 'content', newText);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>textarea.focus();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>textarea.setSelectionRange(start + prefix.length, end + prefix.length);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}, 0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const handleLoadExample = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const activeDoc = systemData.find(c =&gt; c.id === activeClauseId)?.documents.find(d =&gt; d.id === activeDocId);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!activeDoc?.example) return showToast('해당 조항의 KPMC 예시 문서가 준비되지 않았습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (activeDoc.content.trim() !== '') {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!window.confirm('기존 작성된 내용이 삭제되고 KPMC 예시 템플릿으로 덮어쓰기 됩니다. 계속하시겠습니까?')) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>handleDocumentChange(activeClauseId, activeDocId, 'content', activeDoc.example);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>handleDocumentChange(activeClauseId, activeDocId, 'status', 'in_progress');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast('KPMC 컨설팅 템플릿이 적용되었습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 검색 필터링</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const filteredData = systemData.map(clause =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!searchQuery) return clause;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const query = searchQuery.toLowerCase();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const isClauseMatch = clause.title.toLowerCase().includes(query);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const filteredDocs = clause.documents.filter(doc =&gt;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>doc.title.toLowerCase().includes(query) || doc.id.toLowerCase().includes(query) ||</p>
+<p class="p1"><span class="Apple-converted-space">      </span>(doc.content &amp;&amp; doc.content.toLowerCase().includes(query)) ||</p>
+<p class="p1"><span class="Apple-converted-space">      </span>(doc.requirements &amp;&amp; doc.requirements.toLowerCase().includes(query))</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (isClauseMatch || filteredDocs.length &gt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return { ...clause, documents: isClauseMatch &amp;&amp; filteredDocs.length === 0 ? clause.documents : filteredDocs };</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return null;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}).filter(Boolean);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getStatusIcon = (status) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>switch (status) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'completed':</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'approved': return &lt;CheckCircle className="w-4 h-4 text-emerald-500" /&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'in_progress':</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'review': return &lt;Clock className="w-4 h-4 text-amber-500" /&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>default: return &lt;Circle className="w-4 h-4 text-slate-300" /&gt;;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const getStatusText = (status) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>switch (status) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'completed':</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'approved': return '승인/배포 완료';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'in_progress':</p>
+<p class="p1"><span class="Apple-converted-space">      </span>case 'review': return '검토 중';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>default: return '초안 작성/대기';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// ---- 렌더링 1. 로그인 화면 ----</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (appMode === 'login') {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="flex items-center justify-center min-h-screen bg-slate-900 font-sans text-slate-800"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 overflow-hidden relative"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">          </span></p>
+<p class="p1"><span class="Apple-converted-space">          </span>{/* 고객사 로그인 영역 */}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="pr-0 md:pr-10 border-b md:border-b-0 md:border-r border-slate-200 pb-10 md:pb-0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="mb-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;h2 className="text-2xl font-bold text-slate-900 mb-2"&gt;고객사 시스템 접속&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p className="text-sm text-slate-500"&gt;KPMC에서 발급받은 고객사 전용 접근 코드를 입력하여 자사의 문서 시스템에 접속하세요.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-2"&gt;고객사 접근 코드 (6자리)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;Key className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>placeholder="예: 123456"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>value={loginCode}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setLoginCode(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onKeyDown={(e) =&gt; e.key === 'Enter' &amp;&amp; handleClientLogin()}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-lg font-mono tracking-widest"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>onClick={handleClientLogin}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>시스템 입장 &lt;ChevronRight className="w-5 h-5" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>{/* KPMC 관리자 로그인 영역 */}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="pl-0 md:pl-10 pt-10 md:pt-0 flex flex-col justify-center items-center bg-slate-50/50 rounded-xl"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;KpmcLogo /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 className="text-lg font-bold text-slate-800 mb-6 text-center"&gt;컨설팅 본부 관리자 로그인&lt;/h2&gt;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="space-y-3 w-full max-w-xs mb-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;User className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="관리자 아이디"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={adminIdInput}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; setAdminIdInput(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>type="password"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="비밀번호"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={adminPwInput}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; setAdminPwInput(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onKeyDown={(e) =&gt; e.key === 'Enter' &amp;&amp; handleAdminLogin()}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>onClick={handleAdminLogin}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>className="w-full max-w-xs bg-white border-2 border-[#4DB6AC] text-[#4DB6AC] hover:bg-[#4DB6AC] hover:text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;ShieldCheck className="w-5 h-5" /&gt; KPMC 관리자 포털 접속</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="mt-4 text-xs text-slate-400 text-center px-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>* 본 접속구역은 KPMC 내부 컨설턴트 및 시스템 관리자 전용입니다. 허가되지 않은 접근을 금합니다.</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">          </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{toastMessage &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="fixed bottom-8 right-8 bg-slate-800 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-fade-in-up z-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;CheckCircle className="w-5 h-5 text-[#4DB6AC]" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span className="text-sm font-medium tracking-wide"&gt;{toastMessage}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// ---- 렌더링 2. KPMC 관리자 대시보드 ----</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (appMode === 'admin') {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-slate-100 font-sans text-slate-800 p-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="max-w-6xl mx-auto space-y-6"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">          </span></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;header className="flex items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;KpmcLogo /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="border-l-2 border-slate-200 pl-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;h1 className="text-xl font-bold text-slate-900"&gt;ISO 45001 고객사 통합 관리 대시보드&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p className="text-sm text-slate-500"&gt;컨설팅 대상 기업 목록 및 개별 시스템 접근&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>onClick={() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>setEditAdminId(adminConfig?.adminId || '');</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>setEditAdminPw(adminConfig?.adminPw || '');</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>setIsSettingsModalOpen(true);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}}<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;Settings className="w-4 h-4" /&gt; 계정 설정</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 hover:bg-slate-900 rounded-lg transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;LogOut className="w-4 h-4" /&gt; 로그아웃</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="grid grid-cols-1 lg:grid-cols-3 gap-6"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>{/* 신규 고객사 등록 패널 */}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;Building className="w-5 h-5 text-[#4DB6AC]" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;h2 className="text-lg font-bold text-slate-800"&gt;신규 고객사 등록&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;고객사(기업) 명&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>placeholder="예: ㈜한국건설"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>value={newCompanyName}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setNewCompanyName(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onClick={handleAddCompany}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full bg-[#4DB6AC] hover:bg-[#3D968E] text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;Plus className="w-4 h-4" /&gt; 고객사 등록 및 코드 발급</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-500 leading-relaxed"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>고객사를 등록하면 자동으로 **6자리 접속 코드**가 생성됩니다. 해당 코드를 고객사 담당자에게 전달하여 시스템에 접속할 수 있도록 안내해주십시오.</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>{/* 등록된 고객사 목록 */}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;Users className="w-5 h-5 text-indigo-500" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;h2 className="text-lg font-bold text-slate-800"&gt;등록된 고객사 목록&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full"&gt;{companies.length}개사&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">              </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="overflow-x-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;table className="w-full text-left text-sm text-slate-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;th className="px-6 py-4"&gt;고객사명&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;th className="px-6 py-4 text-center"&gt;접속 코드 (Client Key)&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;th className="px-6 py-4"&gt;등록일자&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;th className="px-6 py-4 text-right"&gt;관리 작업&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{companies.length === 0 ? (</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td colSpan="4" className="px-6 py-12 text-center text-slate-400"&gt;등록된 고객사가 없습니다. 좌측 패널에서 등록해주세요.&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>) : companies.map(comp =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;tr key={comp.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td className="px-6 py-4 font-bold text-slate-800"&gt;{comp.name}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td className="px-6 py-4 text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;span className="font-mono bg-slate-200 text-slate-800 px-3 py-1.5 rounded text-lg tracking-widest"&gt;{comp.code}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td className="px-6 py-4"&gt;{comp.createdAt}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td className="px-6 py-4 text-right"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>onClick={() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>setCurrentCompany(comp);</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>setAppMode('system');</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>className="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 px-4 py-2 rounded-md font-semibold transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>시스템 접속</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/table&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{toastMessage &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="fixed bottom-8 right-8 bg-slate-800 text-white px-5 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-fade-in-up z-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;CheckCircle className="w-5 h-5 text-emerald-400" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span className="text-sm font-medium"&gt;{toastMessage}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{/* 관리자 계정 설정 모달 */}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{isSettingsModalOpen &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;Settings className="w-5 h-5 text-[#4DB6AC]" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>관리자 계정 설정</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onClick={() =&gt; setIsSettingsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;X className="w-5 h-5" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="p-6 space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;새 관리자 아이디&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>value={editAdminId}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setEditAdminId(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;새 관리자 비밀번호&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type="password"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>value={editAdminPw}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setEditAdminPw(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onClick={() =&gt; setIsSettingsModalOpen(false)}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>취소</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onClick={handleUpdateAdminConfig}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="px-4 py-2 text-sm font-medium text-white bg-[#4DB6AC] rounded-md hover:bg-[#3D968E] shadow-sm transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>변경 저장</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// ---- 렌더링 3. 개별 고객사 시스템 화면 ----</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const totalDocs = systemData.reduce((acc, clause) =&gt; acc + clause.documents.length, 0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const completedDocs = systemData.reduce((acc, clause) =&gt; acc + clause.documents.filter(d =&gt; d.status === 'completed' || d.status === 'approved').length, 0);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const progressPercent = Math.round((completedDocs / totalDocs) * 100) || 0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const activeClause = systemData.find(c =&gt; c.id === activeClauseId);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const activeDoc = activeClause?.documents.find(d =&gt; d.id === activeDocId);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div className="flex flex-col h-screen bg-slate-100 text-slate-800 font-sans"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">      </span></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{/* Header */}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;header className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 shadow-md z-10"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="flex items-center gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;KpmcLogo /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="ml-2 flex flex-col justify-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;h1 className="text-lg font-bold text-white tracking-wide"&gt;{currentCompany?.name}&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span className="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider"&gt;Workspace&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="text-xs text-[#4DB6AC] font-medium tracking-wider mt-0.5"&gt;ISO 45001 시스템 스튜디오&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="flex items-center gap-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>{isAdmin &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>onClick={() =&gt; setAppMode('admin')}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-900/50 hover:bg-indigo-800 border border-indigo-700 rounded transition-colors mr-2"</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;ArrowLeft className="w-3 h-3" /&gt; 관리자 목록으로</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex items-center gap-3 text-sm font-medium hidden md:flex"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span className="text-slate-300"&gt;전체 진행률&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="w-32 bg-slate-700 rounded-full h-2.5 shadow-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-[#4DB6AC] h-2.5 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }}&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span className="text-[#4DB6AC] w-10 text-right"&gt;{progressPercent}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">          </span></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex items-center border-l border-slate-700 pl-5 gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>onClick={() =&gt; setViewMode(viewMode === 'editor' ? 'dashboard' : 'editor')}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-md transition-colors border border-slate-600"</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;BarChart className="w-4 h-4 text-[#4DB6AC]" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{viewMode === 'editor' ? '대시보드 보기' : '에디터 보기'}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>onClick={saveToServer}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>disabled={isSyncing}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>className={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow-sm ${isSyncing ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;Save className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>{isSyncing ? '동기화 중...' : '서버에 저장'}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="relative group hidden sm:block"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-200 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-md transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;Download className="w-4 h-4 text-slate-400" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>내보내기</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-md shadow-xl hidden group-hover:block z-50 overflow-hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onClick={exportDataReport} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;FileDown className="w-4 h-4 text-indigo-600"/&gt; 마크다운/텍스트 리포트</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onClick={exportDataJson} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-t border-slate-100 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;Download className="w-4 h-4 text-emerald-600"/&gt; JSON 백업 데이터</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={handleLogout} title="로그아웃" className="ml-2 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;LogOut className="w-5 h-5" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{/* Main Content */}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="flex flex-1 overflow-hidden"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{/* Sidebar Navigation */}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;aside className="w-72 bg-slate-800 border-r border-slate-700 flex flex-col overflow-y-auto shadow-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="p-5 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-700 bg-slate-800/50 sticky top-0 z-10 space-y-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span&gt;요구사항 목차&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="relative"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>placeholder="문서 번호, 제목, 내용 검색..."<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>value={searchQuery}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>onChange={(e) =&gt; setSearchQuery(e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="w-full bg-slate-900 border border-slate-600 text-slate-200 text-xs rounded-md pl-9 pr-3 py-2 focus:outline-none focus:border-[#4DB6AC] transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;nav className="flex-1 px-3 py-4 space-y-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{filteredData.length === 0 ? (</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="text-center text-slate-500 text-sm py-4"&gt;검색 결과가 없습니다.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>) : filteredData.map((clause) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">              </span>const isActive = activeClauseId === clause.id;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>const completedInClause = clause.documents.filter(d =&gt; d.status === 'completed' || d.status === 'approved').length;</p>
+<p class="p2"><span class="Apple-converted-space">              </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div key={clause.id} className="mb-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>setActiveClauseId(clause.id);</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>if (clause.documents.length &gt; 0) setActiveDocId(clause.documents[0].id);</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>setViewMode('editor');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-all ${</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>isActive ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex items-center gap-2.5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;FolderOpen className={`w-4 h-4 ${isActive ? 'text-indigo-200' : 'text-slate-400'}`} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;span className="truncate"&gt;{clause.title}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-indigo-500/50' : 'bg-slate-700 text-slate-400'}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>{completedInClause}/{clause.documents.length}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/button&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                  </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>{isActive &amp;&amp; viewMode === 'editor' &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="ml-5 mt-2 space-y-1 pl-3 border-l-2 border-slate-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>{clause.documents.map(doc =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>key={doc.id}</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>onClick={() =&gt; setActiveDocId(doc.id)}</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all ${</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>activeDocId === doc.id ? 'bg-slate-700 text-white font-medium shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>{getStatusIcon(doc.status)}</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;span className="truncate text-left flex-1"&gt;{doc.title}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>))}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                      </span>{/* 추가 문서 등록 버튼 */}</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>onClick={() =&gt; { setTargetClauseId(clause.id); setIsAddModalOpen(true); }}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>className="w-full flex items-center justify-center gap-2 px-3 py-2 mt-2 rounded-md text-xs font-semibold border border-dashed border-slate-600 text-slate-400 hover:text-indigo-300 hover:border-indigo-400 hover:bg-slate-800 transition-all"</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;Plus className="w-3 h-3" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>자사 규정/문서 추가</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>})}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/nav&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/aside&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{/* Editor Area */}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{viewMode === 'editor' &amp;&amp; activeDoc &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;main className="flex-1 flex flex-col bg-slate-100 p-8 overflow-y-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="max-w-5xl w-full mx-auto space-y-6"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">              </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-white rounded-lg p-7 shadow-sm border-t-4 border-indigo-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="flex items-start justify-between mb-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex items-center gap-3 text-sm text-indigo-600 font-semibold mb-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;span className="bg-indigo-50 px-2 py-1 rounded border border-indigo-100 text-indigo-700"&gt;문서번호: {activeDoc.id}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;ChevronRight className="w-4 h-4 text-slate-400" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;span className="text-slate-600"&gt;{activeClause.title}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex items-center gap-1 ml-2 px-2 py-1 bg-slate-100 rounded text-slate-500 text-xs font-medium border border-slate-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;History className="w-3 h-3" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span&gt;Ver {activeDoc.version || '1.0'}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span className="ml-1 border-l border-slate-300 pl-2"&gt;개정일: {activeDoc.lastModified || getCurrentDate()}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h2 className="text-3xl font-bold text-slate-900 tracking-tight"&gt;{activeDoc.title}&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                  </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="flex flex-col items-end gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span className="text-xs font-bold text-slate-400 uppercase tracking-wider"&gt;문서 승인 상태 (ISO 7.5.2)&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;select</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>value={activeDoc.status}</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>onChange={(e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>handleDocumentChange(activeClauseId, activeDocId, 'status', e.target.value);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>handleDocumentChange(activeClauseId, activeDocId, 'lastModified', getCurrentDate());</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>className={`text-sm rounded-md border-0 py-2 pl-4 pr-10 font-bold shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 transition-colors ${</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>activeDoc.status === 'completed' || activeDoc.status === 'approved' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 focus:ring-emerald-600' :</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>activeDoc.status === 'in_progress' || activeDoc.status === 'review' ? 'bg-amber-50 text-amber-700 ring-amber-200 focus:ring-amber-600' :</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>'bg-slate-50 text-slate-700 ring-slate-200 focus:ring-indigo-600'</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;option value="not_started"&gt;초안 작성/대기&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;option value="review"&gt;검토 중 (Under Review)&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;option value="approved"&gt;승인 및 배포 완료&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="flex flex-col gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="bg-slate-50 rounded-lg p-5 border border-slate-200 flex justify-between items-center gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;FileText className="w-4 h-4 text-[#4DB6AC]" /&gt; ISO 45001 요구사항 및 컴플라이언스 가이드</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;p className="text-sm text-slate-600 leading-relaxed"&gt;{activeDoc.requirements}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                      </span>onClick={handleLoadExample}</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>className="flex-shrink-0 flex items-center gap-2 bg-white hover:bg-[#4DB6AC]/10 text-[#308A82] border border-[#4DB6AC]/40 px-4 py-2.5 rounded-md transition-colors text-sm font-bold shadow-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;Lightbulb className="w-4 h-4" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>KPMC 예시 템플릿 적용</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>{/* KPMC 피드백 영역 (승인 완료 시 숨김) */}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>{(activeDoc.status !== 'approved' &amp;&amp; activeDoc.status !== 'completed') ? (</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-indigo-50 rounded-lg p-5 border border-indigo-100 shadow-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;h3 className="text-sm font-bold text-indigo-800 flex items-center gap-2 mb-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;MessageSquare className="w-4 h-4 text-indigo-600" /&gt; KPMC 컨설턴트 피드백 및 보완 요청</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;textarea</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>value={activeDoc.feedback || ''}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>onChange={(e) =&gt; handleDocumentChange(activeClauseId, activeDocId, 'feedback', e.target.value)}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>readOnly={!isAdmin} // 관리자만 피드백 수정 가능</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>placeholder={isAdmin ? "컨설턴트가 문서 보완점이나 피드백을 남기는 공간입니다." : "KPMC 담당 컨설턴트의 피드백이 등록되는 공간입니다."}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>className={`w-full bg-white/60 border border-indigo-200 rounded-md p-3 text-sm text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none h-20 ${!isAdmin &amp;&amp; 'cursor-not-allowed bg-slate-100/50'}`}</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200 flex items-center gap-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;CheckCircle className="w-5 h-5 text-emerald-600" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p className="text-sm font-bold text-emerald-800"&gt;승인 및 공식 문서화 완료&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p className="text-xs text-emerald-600 mt-0.5"&gt;이 문서는 최종 승인되었습니다. KPMC 피드백이 종료되었으며, 필요 시 아래 에디터에서 내용을 계속 수정 및 개정할 수 있습니다.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">              </span>{/* Text Editor (A4 Paper Style) */}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-white shadow-md border border-slate-200 flex flex-col flex-1 min-h-[700px] mx-auto w-full max-w-[210mm]"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="border-b border-slate-200 px-8 py-3 flex items-center justify-between bg-slate-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span className="text-sm font-bold text-slate-500 tracking-widest uppercase"&gt;공식 문서 에디터&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="flex items-center gap-1"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; insertMarkdown('**', '**')} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="굵게"&gt;&lt;Bold className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; insertMarkdown('*', '*')} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="기울임"&gt;&lt;Italic className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="w-px h-4 bg-slate-300 mx-1"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; insertMarkdown('### ', '')} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="제목"&gt;&lt;Heading className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; insertMarkdown('- ', '')} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="목록"&gt;&lt;ListIcon className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;textarea</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>id="document-editor"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={activeDoc.content}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>handleDocumentChange(activeClauseId, activeDocId, 'content', e.target.value);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (!activeDoc.version) handleDocumentChange(activeClauseId, activeDocId, 'version', '1.0');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (!activeDoc.lastModified) handleDocumentChange(activeClauseId, activeDocId, 'lastModified', getCurrentDate());</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="이곳에 공식 절차, 지침 또는 매뉴얼의 내용을 작성하십시오. (Markdown 형식 지원)&amp;#13;&amp;#10;&amp;#13;&amp;#10;예시:&amp;#13;&amp;#10;1. 목적&amp;#13;&amp;#10;2. 적용범위&amp;#13;&amp;#10;3. 책임과 권한&amp;#13;&amp;#10;4. 업무절차"</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="flex-1 w-full p-12 bg-white resize-none outline-none focus:ring-0 font-sans text-base leading-loose text-slate-800 placeholder-slate-300"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/main&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>{/* Dashboard View */}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>{viewMode === 'dashboard' &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;main className="flex-1 flex flex-col bg-slate-100 p-8 overflow-y-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="max-w-6xl mx-auto w-full space-y-8"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">              </span></p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-white p-8 rounded-lg shadow-sm border-l-4 border-indigo-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight"&gt;[{currentCompany?.name}] 문서화 진행 현황 대시보드&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;p className="text-slate-600"&gt;ISO 45001 규격에 따른 안전보건경영시스템 구축 상태를 종합적으로 모니터링합니다.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">              </span>{/* Stat Cards */}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="grid grid-cols-1 md:grid-cols-3 gap-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="bg-slate-100 p-4 rounded-full"&gt;&lt;FileText className="w-7 h-7 text-slate-700" /&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1"&gt;총 요구 문서&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-3xl font-black text-slate-900"&gt;{totalDocs}&lt;span className="text-lg text-slate-400 font-medium ml-1"&gt;건&lt;/span&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="bg-emerald-50 p-4 rounded-full"&gt;&lt;CheckCircle className="w-7 h-7 text-emerald-600" /&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1"&gt;승인/완료&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-3xl font-black text-slate-900"&gt;{completedDocs}&lt;span className="text-lg text-slate-400 font-medium ml-1"&gt;건&lt;/span&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="bg-amber-50 p-4 rounded-full"&gt;&lt;Clock className="w-7 h-7 text-amber-600" /&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1"&gt;진행/대기 중&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-3xl font-black text-slate-900"&gt;{totalDocs - completedDocs}&lt;span className="text-lg text-slate-400 font-medium ml-1"&gt;건&lt;/span&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">              </span>{/* Clause Progress List */}</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="px-8 py-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;h3 className="font-bold text-slate-800 text-lg"&gt;조항별 이행 상태 상세&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="divide-y divide-slate-100"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>{systemData.map(clause =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const clauseTotal = clause.documents.length;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const clauseCompleted = clause.documents.filter(d =&gt; d.status === 'completed' || d.status === 'approved').length;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const clausePercent = Math.round((clauseCompleted / clauseTotal) * 100) || 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div key={clause.id} className="p-8 hover:bg-slate-50 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="flex justify-between items-end mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;h4 className="font-bold text-slate-900 text-lg"&gt;{clause.title}&lt;/h4&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;div className="flex items-center gap-3"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span className="text-sm font-bold text-slate-500"&gt;{clauseCompleted} / {clauseTotal} 완료&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span className={`text-sm font-bold px-3 py-1 rounded-full ${</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>clausePercent === 100 ? 'bg-emerald-100 text-emerald-700' :<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                              </span>clausePercent &gt; 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}`}&gt;{clausePercent}%&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="w-full bg-slate-200 rounded-full h-2 mb-6 shadow-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>&lt;div className={`h-2 rounded-full transition-all duration-500 ${clausePercent === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${clausePercent}%` }}&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                        </span></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>{clause.documents.map(doc =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div key={doc.id} className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() =&gt; { setActiveClauseId(clause.id); setActiveDocId(doc.id); setViewMode('editor'); }}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>&lt;div className="mt-0.5"&gt;{getStatusIcon(doc.status)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>&lt;div className="flex-1 min-w-0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p className="text-sm font-bold text-slate-800 mb-1 leading-tight"&gt;{doc.id} {doc.title}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;p className={`text-xs font-semibold ${</p>
+<p class="p1"><span class="Apple-converted-space">                                  </span>doc.status === 'completed' || doc.status === 'approved' ? 'text-emerald-600' :</p>
+<p class="p1"><span class="Apple-converted-space">                                  </span>doc.status === 'in_progress' || doc.status === 'review' ? 'text-amber-600' : 'text-slate-400'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}`}&gt;{getStatusText(doc.status)}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                          </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>)</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>})}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/main&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{/* Toast Notification */}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{toastMessage &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="fixed bottom-8 right-8 bg-slate-900 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-fade-in-up z-50 border border-slate-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;CheckCircle className="w-5 h-5 text-emerald-400" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span className="text-sm font-medium tracking-wide"&gt;{toastMessage}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>{/* Add Document Modal */}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{isAddModalOpen &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;Plus className="w-5 h-5 text-indigo-600" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>자사 규정/문서 추가</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button onClick={() =&gt; setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;X className="w-5 h-5" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="p-6 space-y-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;문서 번호 / 식별자 &lt;span className="text-red-500"&gt;*&lt;/span&gt;&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="예: 4.4, 지침-01, 절차-안전-01"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={newDoc.id}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; setNewDoc({...newDoc, id: e.target.value})}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;문서 제목 &lt;span className="text-red-500"&gt;*&lt;/span&gt;&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>type="text"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="예: 도급업체 안전관리 절차서"<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={newDoc.title}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; setNewDoc({...newDoc, title: e.target.value})}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="block text-sm font-semibold text-slate-700 mb-1"&gt;요구사항 / 작성 목적&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;textarea<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="이 문서가 작성되어야 하는 목적이나 포함되어야 할 핵심 내용을 메모하세요."<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                  </span>value={newDoc.requirements}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>onChange={(e) =&gt; setNewDoc({...newDoc, requirements: e.target.value})}</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-24 resize-none"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>onClick={() =&gt; setIsAddModalOpen(false)}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>취소</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>onClick={handleAddDocument}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 shadow-sm transition-colors"</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>문서 추가하기</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>);</p>
+<p class="p1">}</p>
+</body>
+</html>
