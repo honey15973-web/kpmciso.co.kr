@@ -1,0 +1,1189 @@
+{\rtf1\ansi\ansicpg949\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 import React, \{ useState, useEffect \} from 'react';\
+import \{ initializeApp \} from 'firebase/app';\
+import \{ getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged \} from 'firebase/auth';\
+import \{ getFirestore, doc, setDoc, collection, onSnapshot \} from 'firebase/firestore';\
+import \{ \
+  FolderOpen, \
+  FileText, \
+  CheckCircle, \
+  Circle, \
+  Clock, \
+  Download, \
+  Upload, \
+  Save, \
+  BarChart, \
+  ChevronRight,\
+  ShieldCheck,\
+  FileDown,\
+  Search,\
+  Plus,\
+  X,\
+  History,\
+  Bold,\
+  Italic,\
+  Heading,\
+  List as ListIcon,\
+  Lightbulb,\
+  MessageSquare,\
+  Users,\
+  Building,\
+  Key,\
+  LogOut,\
+  ArrowLeft,\
+  Settings,\
+  User,\
+  Lock\
+\} from 'lucide-react';\
+\
+// Firebase \uc0\u52488 \u44592 \u54868  \u49444 \u51221 \
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : \{\};\
+const app = initializeApp(firebaseConfig);\
+const auth = getAuth(app);\
+const db = getFirestore(app);\
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';\
+\
+// KPMC \uc0\u47196 \u44256  \u52980 \u54252 \u45324 \u53944 \
+const KpmcLogo = () => (\
+  <div className="flex items-center select-none bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm">\
+    <span className="text-[#4DB6AC] font-black text-2xl tracking-tighter">K</span>\
+    <span className="text-slate-800 font-black text-2xl tracking-tighter">PMC</span>\
+  </div>\
+);\
+\
+// ISO 45001 \uc0\u54596 \u49688  \u47928 \u49436 \u54868  \u51221 \u48372  (\u52488 \u44592  \u45936 \u51060 \u53552 )\
+const initialIsoData = [\
+  \{\
+    id: '4',\
+    title: '4. \uc0\u51312 \u51649 \u51032  \u49345 \u54889  (Context)',\
+    documents: [\
+      \{ id: '4.3', title: '\uc0\u50504 \u51204 \u48372 \u44148 \u44221 \u50689 \u49884 \u49828 \u53596 \u51032  \u51201 \u50857 \u48276 \u50948 ', content: '', status: 'not_started', requirements: '\u51312 \u51649 \u51032  \u54876 \u46041 , \u51228 \u54408 , \u49436 \u48708 \u49828  \u48143  \u44288 \u47144  \u49884 \u49444 \u51012  \u54252 \u54632 \u54620  \u49884 \u49828 \u53596  \u51201 \u50857 \u48276 \u50948  \u47749 \u49884 ', example: '### 1. \u47785 \u51201 \\n\u48376  \u47928 \u49436 \u45716  \u45817 \u49324 \u51032  \u50504 \u51204 \u48372 \u44148 \u44221 \u50689 \u49884 \u49828 \u53596 (OH&SMS)\u51060  \u51201 \u50857 \u46104 \u45716  \u48276 \u50948 \u50752  \u44221 \u44228 \u47484  \u47749 \u54869 \u55176  \u44508 \u51221 \u54632 \u51012  \u47785 \u51201 \u51004 \u47196  \u54620 \u45796 .\\n\\n### 2. \u51201 \u50857  \u48276 \u50948 \\n\u45817 \u49324 \u51032  \u47784 \u46304  \u49324 \u50629 \u51109 , \u51228 \u54408  \u49373 \u49328 , \u49436 \u48708 \u49828  \u51228 \u44277  \u54876 \u46041  \u48143  \u44288 \u47144  \u48512 \u45824 \u49884 \u49444 \u50640  \u51201 \u50857 \u46108 \u45796 .\\n- \u49324 \u50629 \u51109  \u50948 \u52824 : [\u48376 \u49324 /\u44277 \u51109  \u51452 \u49548  \u51077 \u47141 ]\\n- \u51201 \u50857  \u54876 \u46041 : [\u51452 \u50836  \u49373 \u49328 \u54408  \u46608 \u45716  \u49436 \u48708 \u49828  \u47749  \u51077 \u47141 ]\u51032  \u49444 \u44228 , \u44060 \u48156 , \u49373 \u49328  \u48143  \u48512 \u44032  \u49436 \u48708 \u49828 \\n- \u51228 \u50808  \u45824 \u49345 : \u45817 \u49324 \u51032  \u47932 \u47532 \u51201  \u53685 \u51228  \u48276 \u50948 \u47484  \u48279 \u50612 \u45212  \u50808 \u48512  \u54801 \u47141 \u50629 \u52404  \u44396 \u50669 ', feedback: 'KPMC \u53076 \u47704 \u53944 : \u51201 \u50857  \u48276 \u50948  \u51089 \u49457  \u49884 , \u48376 \u49324 \u50752  \u44277 \u51109  \u50808 \u50640  \u50808 \u51452  \u52285 \u44256 \u44032  \u51080 \u45796 \u47732  \u48152 \u46300 \u49884  \u54252 \u54632 \u54616 \u50668  \u44592 \u51116 \u54644  \u51452 \u49884 \u44592  \u48148 \u46989 \u45768 \u45796 .' \},\
+    ]\
+  \},\
+  \{\
+    id: '5',\
+    title: '5. \uc0\u47532 \u45908 \u49901  \u48143  \u44540 \u47196 \u51088  \u52280 \u50668  (Leadership)',\
+    documents: [\
+      \{ id: '5.2', title: '\uc0\u50504 \u51204 \u48372 \u44148  \u48169 \u52840 ', content: '', status: 'not_started', requirements: '\u50504 \u51204 \u54616 \u44256  \u44148 \u44053 \u54620  \u51089 \u50629 \u51312 \u44148  \u51228 \u44277 \u51012  \u50948 \u54620  \u44221 \u50689 \u51652 \u51032  \u51032 \u51648  \u54364 \u47749 ', example: '## [\u54924 \u49324 \u47749 ] \u50504 \u51204 \u48372 \u44148  \u48169 \u52840 \\n\\n\u12828 [\u54924 \u49324 \u47749 ]\u51008  \u51064 \u44036 \u51316 \u51473 \u51032  \u51060 \u45392 \u51012  \u48148 \u53461 \u51004 \u47196  \u47784 \u46304  \u44540 \u47196 \u51088 \u50752  \u51060 \u54644 \u44288 \u44228 \u51088 \u51032  \u49373 \u47749 \u44284  \u44148 \u44053 \u51012  \u48372 \u54840 \u54616 \u45716  \u44163 \u51012  \u44592 \u50629  \u44221 \u50689 \u51032  \u52572 \u50864 \u49440  \u44032 \u52824 \u47196  \u49340 \u45716 \u45796 . \u51060 \u47484  \u50948 \u54644  \u45796 \u51020 \u44284  \u44057 \u51060  \u50504 \u51204 \u48372 \u44148  \u48169 \u52840 \u51012  \u49440 \u50616 \u54616 \u44256  \u51201 \u44537  \u49892 \u52380 \u54620 \u45796 .\\n\\n1. **\u50504 \u51204 \u48372 \u44148  \u44221 \u50689  \u52572 \u50864 \u49440 **: \u47784 \u46304  \u44221 \u50689 \u54876 \u46041 \u50640 \u49436  \u50504 \u51204 \u44284  \u48372 \u44148 \u51012  \u52572 \u50864 \u49440 \u51004 \u47196  \u44256 \u47140 \u54620 \u45796 .\\n2. **\u48277 \u44508  \u51456 \u49688 **: \u50504 \u51204 \u48372 \u44148  \u44288 \u44228  \u48277 \u47161  \u48143  \u51312 \u51649 \u51060  \u46041 \u51032 \u54620  \u44592 \u53440  \u50836 \u44396 \u49324 \u54637 \u51012  \u50628 \u44201 \u55176  \u51456 \u49688 \u54620 \u45796 .\\n3. **\u50948 \u54644 \u50948 \u54744 \u50836 \u51064  \u51228 \u44144 **: \u51104 \u51116 \u46108  \u50976 \u54644 \'b7\u50948 \u54744 \u50836 \u51064 \u51012  \u49324 \u51204 \u50640  \u54028 \u50501 \u54616 \u44256  \u51648 \u49549  \u44060 \u49440 \u54620 \u45796 .\\n\\n[\u45380 \u46020 ]\u45380  [\u50900 ]\u51068 \\n\u12828 [\u54924 \u49324 \u47749 ] \u45824 \u54364 \u51060 \u49324  [\u51060 \u47492 ] (\u49436 \u47749 )' \},\
+      \{ id: '5.3', title: '\uc0\u51312 \u51649 \u51032  \u50669 \u54624 , \u52293 \u51076  \u48143  \u44428 \u54620 ', content: '', status: 'not_started', requirements: '\u49884 \u49828 \u53596  \u45236  \u44033  \u51064 \u50896 \u51032  \u50669 \u54624 , \u52293 \u51076 , \u44428 \u54620 \u50640  \u45824 \u54620  \u54624 \u45817  \u48143  \u47928 \u49436 \u54868 ', example: '### 1. \u45824 \u54364 \u51060 \u49324  (\u52572 \u44256 \u44221 \u50689 \u51088 )\\n- \u50504 \u51204 \u48372 \u44148 \u44221 \u50689 \u49884 \u49828 \u53596 \u51032  \u51204 \u48152 \u51201 \u51064  \u52293 \u51076 \u44284  \u44428 \u54620 \\n- \u50868 \u50689  \u51088 \u50896 (\u51064 \u47141 , \u50696 \u49328  \u46321 ) \u51228 \u44277 \\n\\n### 2. \u50504 \u51204 \u48372 \u44148  \u44288 \u47532 \u52293 \u51076 \u51088  (\u44277 \u51109 \u51109  \u46321 )\\n- \u49884 \u49828 \u53596 \u51032  \u49688 \u47549 , \u49892 \u54665  \u48143  \u50976 \u51648  \u44288 \u47532 \\n- \u50504 \u51204 \u48372 \u44148  \u49457 \u44284 \u50640  \u45824 \u54620  \u44221 \u50689 \u44160 \u53664  \u48372 \u44256 ' \},\
+    ]\
+  \},\
+  \{\
+    id: '6',\
+    title: '6. \uc0\u44592 \u54925  (Planning)',\
+    documents: [\
+      \{ id: '6.1.1', title: '\uc0\u47532 \u49828 \u53356  \u48143  \u44592 \u54924 ', content: '', status: 'not_started', requirements: '\u54028 \u50501 \u46108  \u47532 \u49828 \u53356  \u48143  \u44592 \u54924 , \u51060 \u47484  \u45796 \u47336 \u44592  \u50948 \u54620  \u51312 \u52824  \u44228 \u54925 ', example: 'KPMC \u51089 \u49457  \u50696 \u49884 :\\n- \u47532 \u49828 \u53356  1: \u44256 \u49548 \u51089 \u50629  \u51613 \u44032 \u50640  \u46384 \u47480  \u52628 \u46973  \u50948 \u54744  (\u45824 \u52293 : \u49828 \u47560 \u53944  \u50504 \u51204 \u44256 \u47532  \u46020 \u51077 )\\n- \u44592 \u54924  1: \u50504 \u51204 \u48372 \u44148 \u44288 \u47532 \u52404 \u44228  \u51064 \u51613 \u50640  \u46384 \u47480  \u44592 \u50629  \u49888 \u47280 \u46020  \u49345 \u49849 ' \},\
+      \{ id: '6.1.2', title: '\uc0\u50948 \u54744 \u49457  \u54217 \u44032  \u48169 \u48277 \u47200  \u48143  \u44592 \u51456 ', content: '', status: 'not_started', requirements: '\u50976 \u54644 \u50948 \u54744 \u50836 \u51064  \u54028 \u50501  \u48143  \u50948 \u54744 \u49457  \u54217 \u44032 \u47484  \u50948 \u54620  \u44592 \u51456 \u44284  \u48169 \u48277 ', example: 'KPMC \u51228 \u44277 : \u50948 \u54744 \u49457 \u54217 \u44032 \u45716  \u48712 \u46020 (\u44032 \u45733 \u49457 )\u50752  \u44053 \u46020 (\u51473 \u45824 \u49457 )\u47484  5x5 \u47588 \u53944 \u47533 \u49828 \u47196  \u54217 \u44032 \u54616 \u47728  10\u51216  \u51060 \u49345 \u51032  \u50948 \u54744 \u51008  \u49688 \u50857  \u48520 \u44032 \u54620  \u50948 \u54744 (Unacceptable Risk)\u51004 \u47196  \u48516 \u47448 \u54616 \u50668  \u51593 \u49884  \u51312 \u52824 \u54620 \u45796 .' \},\
+      \{ id: '6.1.3', title: '\uc0\u48277 \u51201  \u48143  \u44592 \u53440  \u50836 \u44396 \u49324 \u54637 ', content: '', status: 'not_started', requirements: '\u51201 \u50857 \u46104 \u45716  \u50504 \u51204 \u48372 \u44148  \u44288 \u47144  \u48277 \u44508  \u48143  \u50836 \u44396 \u49324 \u54637  \u54028 \u50501  \u47785 \u47197 ', example: 'KPMC \u44032 \u51060 \u46300 : \\n1. \u49328 \u50629 \u50504 \u51204 \u48372 \u44148 \u48277  \u44288 \u47144  \u51312 \u54637 \\n2. \u51473 \u45824 \u51116 \u54644 \u52376 \u48268 \u48277  \u48143  \u49884 \u54665 \u47161 \\n3. \u49548 \u48169 \u44592 \u48376 \u48277  \u46321 ' \},\
+      \{ id: '6.2.2', title: '\uc0\u50504 \u51204 \u48372 \u44148  \u47785 \u54364  \u48143  \u45804 \u49457  \u44228 \u54925 ', content: '', status: 'not_started', requirements: '\u52769 \u51221  \u44032 \u45733 \u54620  \u50504 \u51204 \u48372 \u44148  \u47785 \u54364  \u48143  \u44396 \u52404 \u51201 \u51064  \u49892 \u54665  \u44228 \u54925 ', example: 'KPMC \u53596 \u54540 \u47551 : \\n- KPI 1: \u51116 \u54644 \u50984  0.05% \u51060 \u54616  \u45804 \u49457 \\n- KPI 2: \u50500 \u52264 \u49324 \u44256  \u48156 \u44404 \u47456  \u51204 \u45380  \u45824 \u48708  15% \u54693 \u49345 ' \},\
+    ]\
+  \},\
+  \{\
+    id: '7',\
+    title: '7. \uc0\u51648 \u50896  (Support)',\
+    documents: [\
+      \{ id: '7.2', title: '\uc0\u51201 \u44201 \u49457  \u51613 \u44144  (\u44368 \u50977 \u54984 \u47144  \u44592 \u47197 )', content: '', status: 'not_started', requirements: '\u44540 \u47196 \u51088 \u51032  \u50504 \u51204 \u48372 \u44148  \u50669 \u47049 , \u44368 \u50977 , \u54984 \u47144 , \u44221 \u54744 \u50640  \u45824 \u54620  \u44592 \u47197 ', example: 'KPMC \u50696 \u49884 : \u50672 \u44036  \u44368 \u50977 \u54984 \u47144  \u44228 \u54925 \u49436  \u50836 \u50557  \u48143  \u48277 \u51221 \u51032 \u47924 \u44368 \u50977 (\u51221 \u44592 \u50504 \u51204 \u48372 \u44148 \u44368 \u50977 , \u53945 \u48324 \u44368 \u50977 ) \u51060 \u49688  \u54788 \u54889 \u54364  \u46321 .' \},\
+      \{ id: '7.4', title: '\uc0\u51032 \u49324 \u49548 \u53685  \u44592 \u47197 ', content: '', status: 'not_started', requirements: '\u45236 \u48512  \u48143  \u50808 \u48512  \u51032 \u49324 \u49548 \u53685  \u51208 \u52264  \u48143  \u51452 \u50836  \u51032 \u49324 \u49548 \u53685  \u51613 \u48729 ', example: 'KPMC \u50696 \u49884 : \u47588 \u50900  1\u54924  \u45432 \u49324 \u54801 \u51032 \u52404  \u54924 \u51032 \u47197  \u52392 \u48512  \u50577 \u49885  \u48143  \u44540 \u47196 \u51088  \u44148 \u51032 \u54632  \u44288 \u47532  \u45824 \u51109 .' \},\
+    ]\
+  \},\
+  \{\
+    id: '8',\
+    title: '8. \uc0\u50868 \u50857  (Operation)',\
+    documents: [\
+      \{ id: '8.1', title: '\uc0\u50868 \u50857  \u44592 \u54925  \u48143  \u44288 \u47532  \u44592 \u51456 ', content: '', status: 'not_started', requirements: '\u50504 \u51204 \u54620  \u51089 \u50629  \u49688 \u54665 \u51012  \u50948 \u54620  \u54532 \u47196 \u49464 \u49828  \u48143  \u50868 \u50857  \u44592 \u51456  \u49444 \u51221 ', example: 'KPMC \u53596 \u54540 \u47551 : \u46020 \u44553 \u50629 \u52404  \u50504 \u51204 \u48372 \u44148  \u44288 \u47532 \u51648 \u52840 \\n1. \u51201 \u44201  \u49688 \u44553 \u51064  \u49440 \u51221  \u51208 \u52264 \\n2. \u46020 \u44553  \u51089 \u50629  \u50504 \u51204 \u44288 \u47532  \u44592 \u51456  \u48143  \u54056 \u45328 \u54000 ' \},\
+      \{ id: '8.2', title: '\uc0\u48708 \u49345 \u49324 \u53468  \u45824 \u48708  \u48143  \u45824 \u51025  \u54532 \u47196 \u49464 \u49828 ', content: '', status: 'not_started', requirements: '\u51104 \u51116 \u51201  \u48708 \u49345 \u49324 \u53468  \u45824 \u51025  \u51208 \u52264  \u48143  \u47784 \u51032 \u54984 \u47144  \u44228 \u54925 /\u44208 \u44284 ', example: 'KPMC \u44032 \u51060 \u46300 : \\n[\u49884 \u45208 \u47532 \u50724  1] \u51228 \u51312 \u46972 \u51064  A\u44396 \u50669  \u54868 \u51116  \u48156 \u49373 \\n- \u45824 \u54588  \u44221 \u47196 \u46020 \\n- \u49548 \u48169 \u49436  \u50672 \u46973 \u47581 \\n- \u51088 \u50948 \u49548 \u48169 \u45824  \u50669 \u54624  \u48516 \u45812 \u54364 ' \},\
+    ]\
+  \},\
+  \{\
+    id: '9',\
+    title: '9. \uc0\u49457 \u44284  \u54217 \u44032  (Performance Evaluation)',\
+    documents: [\
+      \{ id: '9.1.1', title: '\uc0\u47784 \u45768 \u53552 \u47553 , \u52769 \u51221 , \u48516 \u49437  \u48143  \u54217 \u44032  \u44208 \u44284 ', content: '', status: 'not_started', requirements: '\u50504 \u51204 \u48372 \u44148  \u49457 \u44284  \u52769 \u51221  \u51648 \u54364  \u48143  \u48516 \u49437  \u44208 \u44284 , \u51109 \u48708  \u44368 \u51221  \u44592 \u47197 ', example: 'KPMC \u50696 \u49884 : \u48152 \u44592 \u48324  \u51089 \u50629 \u54872 \u44221 \u52769 \u51221  \u44208 \u44284  \u48143  \u50504 \u51204 \u49444 \u48708 (\u54872 \u54413 \u44592 , \u44032 \u49828 \u53456 \u51648 \u44592 ) \u50900 \u44036  \u51216 \u44160  \u52404 \u53356 \u47532 \u49828 \u53944 ' \},\
+      \{ id: '9.1.2', title: '\uc0\u51456 \u49688 \u54217 \u44032  \u44208 \u44284 ', content: '', status: 'not_started', requirements: '\u48277 \u51201  \u48143  \u44592 \u53440  \u50836 \u44396 \u49324 \u54637  \u51456 \u49688  \u50668 \u48512  \u51221 \u44592  \u54217 \u44032  \u44208 \u44284 ', example: 'KPMC \u52404 \u53356 \u47532 \u49828 \u53944 : \\n- \u51312 \u54637  38\u51312  (\u50504 \u51204 \u51312 \u52824 ): \u51060 \u54665  \u50756 \u47308  (100%)\\n- \u51312 \u54637  114\u51312  (\u47932 \u51656 \u50504 \u51204 \u48372 \u44148 \u51088 \u47308 \u51032  \u44172 \u49884 ): \u48372 \u50756  \u54596 \u50836  (80%)' \},\
+      \{ id: '9.2.2', title: '\uc0\u45236 \u48512 \u49900 \u49324  \u54532 \u47196 \u44536 \u47016  \u48143  \u44208 \u44284 ', content: '', status: 'not_started', requirements: '\u45236 \u48512 \u49900 \u49324  \u44228 \u54925 , \u49900 \u49324 \u50896  \u51201 \u44201 \u49457 , \u49900 \u49324  \u44208 \u44284  \u48372 \u44256 \u49436 ', example: 'KPMC \u53596 \u54540 \u47551 : \\n- \u49900 \u49324  \u51068 \u51088 : 202X\u45380  X\u50900  X\u51068 \\n- \u49900 \u49324 \u50896 : OOO \u49900 \u49324 \u50896 \\n- \u48156 \u44204 \u49324 \u54637 (CAR): \u48372 \u54840 \u44396  \u48120 \u52265 \u50857  1\u44148  (\u49884 \u51221 \u51312 \u52824  \u50836 \u47581 )' \},\
+      \{ id: '9.3', title: '\uc0\u44221 \u50689 \u44160 \u53664  \u44208 \u44284 ', content: '', status: 'not_started', requirements: '\u52572 \u44256 \u44221 \u50689 \u51088 \u51032  \u49884 \u49828 \u53596  \u51201 \u54633 \u49457 , \u52649 \u51313 \u49457 , \u50976 \u54952 \u49457  \u44160 \u53664  \u54924 \u51032 \u47197 ', example: 'KPMC \u50696 \u49884 : \u51204 \u45380 \u46020  \u49324 \u44256  \u48143  \u50500 \u52264 \u49324 \u44256  \u46041 \u54693  \u48516 \u49437 , \u44221 \u50689 \u44160 \u53664  \u51648 \u49884 \u49324 \u54637  \u44592 \u47197  \u53596 \u54540 \u47551 ' \},\
+    ]\
+  \},\
+  \{\
+    id: '10',\
+    title: '10. \uc0\u44060 \u49440  (Improvement)',\
+    documents: [\
+      \{ id: '10.2.a', title: '\uc0\u49324 \u44148  \u48143  \u48512 \u51201 \u54633 \u49457 , \u49884 \u51221 \u51312 \u52824  \u45236 \u50857 ', content: '', status: 'not_started', requirements: '\u49324 \u44256 /\u50500 \u52264 \u49324 \u44256  \u51312 \u49324  \u44208 \u44284  \u48143  \u48156 \u49373 \u54620  \u48512 \u51201 \u54633  \u49324 \u54637  \u44592 \u47197 ', example: 'KPMC \u51228 \u44277 : 5Why \u44592 \u48277 \u51012  \u54876 \u50857 \u54620  \u44540 \u48376 \u50896 \u51064  \u51312 \u49324 \u54364  \u48143  \u48512 \u51201 \u54633  \u48372 \u44256 \u49436 (NCR) \u49436 \u49885 ' \},\
+      \{ id: '10.2.b', title: '\uc0\u49884 \u51221 \u51312 \u52824  \u44208 \u44284  \u48143  \u54952 \u44284 \u49457  \u54217 \u44032 ', content: '', status: 'not_started', requirements: '\u52712 \u54644 \u51652  \u51312 \u52824 \u51032  \u44208 \u44284  \u48143  \u51116 \u48156 \u48169 \u51648  \u54952 \u44284 \u50640  \u45824 \u54620  \u44160 \u51613 ', example: 'KPMC \u53596 \u54540 \u47551 : \u51312 \u52824  \u54980  3\u44060 \u50900  \u47784 \u45768 \u53552 \u47553  \u44221 \u44284 \u48372 \u44256 . \u51116 \u48156  \u50630 \u51004 \u48064 \u47196  \u54644 \u45817  \u49884 \u51221 \u51312 \u52824  \u51333 \u44208 (Close).' \},\
+      \{ id: '10.3', title: '\uc0\u51648 \u49549 \u51201  \u44060 \u49440  \u51613 \u44144 ', content: '', status: 'not_started', requirements: '\u50504 \u51204 \u48372 \u44148  \u49457 \u44284  \u54693 \u49345 \u51012  \u50948 \u54620  \u51648 \u49549 \u51201  \u44060 \u49440  \u54876 \u46041  \u44208 \u44284 ', example: 'KPMC \u51089 \u49457  \u50696 \u49884 : \u49324 \u50629 \u51109  \u50504 \u51204  \u44060 \u49440  \u51228 \u50504 (Smart Safety) \u50864 \u49688 \u49324 \u47168  \u48143  \u54252 \u49345  \u45236 \u50669  \u51613 \u48729 ' \},\
+    ]\
+  \}\
+];\
+\
+export default function App() \{\
+  // \uc0\u51064 \u51613  \u48143  \u46972 \u50864 \u54021  \u49345 \u53468 \
+  const [appMode, setAppMode] = useState('login'); // 'login', 'admin', 'system'\
+  const [isAdmin, setIsAdmin] = useState(false);\
+  const [currentCompany, setCurrentCompany] = useState(null);\
+  \
+  // \uc0\u45936 \u51060 \u53552  \u49345 \u53468 \
+  const [user, setUser] = useState(null);\
+  const [companies, setCompanies] = useState([]);\
+  const [systemData, setSystemData] = useState(initialIsoData);\
+  \
+  // UI \uc0\u52968 \u53944 \u47204  \u49345 \u53468 \
+  const [activeClauseId, setActiveClauseId] = useState(initialIsoData[0].id);\
+  const [activeDocId, setActiveDocId] = useState(initialIsoData[0].documents[0].id);\
+  const [toastMessage, setToastMessage] = useState(null);\
+  const [viewMode, setViewMode] = useState('editor'); // 'editor', 'dashboard'\
+  const [searchQuery, setSearchQuery] = useState('');\
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);\
+  const [targetClauseId, setTargetClauseId] = useState('');\
+  const [newDoc, setNewDoc] = useState(\{ id: '', title: '', requirements: '' \});\
+  const [isSyncing, setIsSyncing] = useState(false);\
+  \
+  // \uc0\u47196 \u44536 \u51064 \u50857  \u51076 \u49884  \u54268  \u49345 \u53468 \
+  const [loginCode, setLoginCode] = useState('');\
+  const [newCompanyName, setNewCompanyName] = useState('');\
+\
+  // \uc0\u44288 \u47532 \u51088  \u47196 \u44536 \u51064  \u48143  \u49444 \u51221 \u50857  \u49345 \u53468  \u52628 \u44032 \
+  const [adminIdInput, setAdminIdInput] = useState('');\
+  const [adminPwInput, setAdminPwInput] = useState('');\
+  const [adminConfig, setAdminConfig] = useState(null);\
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);\
+  const [editAdminId, setEditAdminId] = useState('');\
+  const [editAdminPw, setEditAdminPw] = useState('');\
+\
+  const getCurrentDate = () => new Date().toISOString().slice(0, 10);\
+\
+  // 1. Firebase \uc0\u51064 \u51613  \u52488 \u44592 \u54868 \
+  useEffect(() => \{\
+    const initAuth = async () => \{\
+      try \{\
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) \{\
+          await signInWithCustomToken(auth, __initial_auth_token);\
+        \} else \{\
+          await signInAnonymously(auth);\
+        \}\
+      \} catch (error) \{\
+        console.error("\uc0\u51064 \u51613  \u49892 \u54056 :", error);\
+      \}\
+    \};\
+    initAuth();\
+    const unsubscribe = onAuthStateChanged(auth, setUser);\
+    return () => unsubscribe();\
+  \}, []);\
+\
+  // 2. \uc0\u44288 \u47532 \u51088 \u50857  \u51204 \u52404  \u44256 \u44061 \u49324  \u47785 \u47197  \u49892 \u49884 \u44036  \u44396 \u46021 \
+  useEffect(() => \{\
+    if (!user) return;\
+    const compRef = collection(db, 'artifacts', appId, 'public', 'data', 'companies');\
+    const unsubscribe = onSnapshot(compRef, (snap) => \{\
+      const compData = snap.docs.map(d => (\{ id: d.id, ...d.data() \}));\
+      setCompanies(compData);\
+    \}, (error) => console.error("\uc0\u44256 \u44061 \u49324  \u47785 \u47197  \u44396 \u46021  \u50724 \u47448 :", error));\
+    \
+    return () => unsubscribe();\
+  \}, [user]);\
+\
+  // \uc0\u44288 \u47532 \u51088  \u44228 \u51221  \u51221 \u48372  \u49892 \u49884 \u44036  \u44396 \u46021  \u48143  \u52488 \u44592 \u54868  (Firestore \u46041 \u44592 \u54868 )\
+  useEffect(() => \{\
+    if (!user) return;\
+    const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admin_settings');\
+    const unsubscribe = onSnapshot(configRef, (docSnap) => \{\
+      if (docSnap.exists()) \{\
+        setAdminConfig(docSnap.data());\
+      \} else \{\
+        // \uc0\u52572 \u52488  \u51217 \u49549  \u49884  \u44592 \u48376  \u44288 \u47532 \u51088  \u44228 \u51221  \u49373 \u49457 \
+        const defaultConfig = \{ adminId: 'admin', adminPw: 'kpmc1234' \};\
+        setDoc(configRef, defaultConfig);\
+        setAdminConfig(defaultConfig);\
+      \}\
+    \}, (error) => console.error("\uc0\u44288 \u47532 \u51088  \u49444 \u51221  \u44396 \u46021  \u50724 \u47448 :", error));\
+    \
+    return () => unsubscribe();\
+  \}, [user]);\
+\
+  // 3. \uc0\u53945 \u51221  \u44256 \u44061 \u49324 \u51032  ISO \u49884 \u49828 \u53596  \u45936 \u51060 \u53552  \u49892 \u49884 \u44036  \u44396 \u46021 \
+  useEffect(() => \{\
+    if (!user || !currentCompany) return;\
+    \
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'company_data', currentCompany.id);\
+    const unsubscribe = onSnapshot(docRef, (docSnap) => \{\
+      if (docSnap.exists()) \{\
+        setSystemData(docSnap.data().systemData);\
+      \} else \{\
+        // \uc0\u49352  \u44256 \u44061 \u49324 \u51032  \u44221 \u50864  \u52488 \u44592  \u45936 \u51060 \u53552  \u49464 \u54021 \
+        setSystemData(initialIsoData);\
+      \}\
+    \}, (error) => \{\
+      console.error("Firestore \uc0\u44396 \u46021  \u50724 \u47448 :", error);\
+      showToast('\uc0\u44256 \u44061 \u49324  \u45936 \u51060 \u53552 \u47484  \u48520 \u47084 \u50724 \u45716  \u51473  \u50724 \u47448 \u44032  \u48156 \u49373 \u54664 \u49845 \u45768 \u45796 .');\
+    \});\
+    \
+    return () => unsubscribe();\
+  \}, [user, currentCompany]);\
+\
+  const showToast = (message) => \{\
+    setToastMessage(message);\
+    setTimeout(() => setToastMessage(null), 3000);\
+  \};\
+\
+  // KPMC \uc0\u44288 \u47532 \u51088  \u47196 \u44536 \u51064  \u52376 \u47532  (Firestore \u45936 \u51060 \u53552  \u44592 \u48152  \u44160 \u51613 )\
+  const handleAdminLogin = () => \{\
+    if (!adminConfig) \{\
+      showToast('\uc0\u49436 \u48260  \u49444 \u51221 \u51012  \u48520 \u47084 \u50724 \u45716  \u51473 \u51077 \u45768 \u45796 . \u51104 \u49884  \u54980  \u45796 \u49884  \u49884 \u46020 \u54644 \u51452 \u49464 \u50836 .');\
+      return;\
+    \}\
+    if (adminIdInput === adminConfig.adminId && adminPwInput === adminConfig.adminPw) \{\
+      setIsAdmin(true);\
+      setAppMode('admin');\
+      setAdminIdInput('');\
+      setAdminPwInput('');\
+      showToast('\uc0\u44288 \u47532 \u51088  \u54252 \u53560 \u50640  \u51217 \u49549 \u54664 \u49845 \u45768 \u45796 .');\
+    \} else \{\
+      showToast('\uc0\u50500 \u51060 \u46356  \u46608 \u45716  \u48708 \u48128 \u48264 \u54840 \u44032  \u51068 \u52824 \u54616 \u51648  \u50506 \u49845 \u45768 \u45796 .');\
+    \}\
+  \};\
+\
+  // KPMC \uc0\u44288 \u47532 \u51088  \u44228 \u51221  \u51221 \u48372  \u48320 \u44221 \
+  const handleUpdateAdminConfig = async () => \{\
+    if (!editAdminId.trim() || !editAdminPw.trim()) \{\
+      return showToast('\uc0\u50500 \u51060 \u46356 \u50752  \u48708 \u48128 \u48264 \u54840 \u47484  \u47784 \u46160  \u51077 \u47141 \u54644 \u51452 \u49464 \u50836 .');\
+    \}\
+    try \{\
+      const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'admin_settings');\
+      await setDoc(configRef, \{ adminId: editAdminId, adminPw: editAdminPw \});\
+      setIsSettingsModalOpen(false);\
+      showToast('\uc0\u44288 \u47532 \u51088  \u44228 \u51221  \u51221 \u48372 \u44032  \u49457 \u44277 \u51201 \u51004 \u47196  \u48320 \u44221 \u46104 \u50632 \u49845 \u45768 \u45796 .');\
+    \} catch (e) \{\
+      console.error(e);\
+      showToast('\uc0\u44228 \u51221  \u51221 \u48372  \u48320 \u44221  \u51473  \u50724 \u47448 \u44032  \u48156 \u49373 \u54664 \u49845 \u45768 \u45796 .');\
+    \}\
+  \};\
+\
+  // \uc0\u44256 \u44061 \u49324  \u51217 \u49549  \u53076 \u46300  \u47196 \u44536 \u51064  \u52376 \u47532 \
+  const handleClientLogin = () => \{\
+    if (!loginCode.trim()) \{\
+      showToast('\uc0\u51217 \u49549  \u53076 \u46300 \u47484  \u51077 \u47141 \u54644 \u51452 \u49464 \u50836 .');\
+      return;\
+    \}\
+    const comp = companies.find(c => c.code === loginCode.trim());\
+    if (comp) \{\
+      setCurrentCompany(comp);\
+      setIsAdmin(false);\
+      setAppMode('system');\
+      showToast(`$\{comp.name\} \uc0\u49884 \u49828 \u53596 \u50640  \u51217 \u49549 \u54664 \u49845 \u45768 \u45796 .`);\
+    \} else \{\
+      showToast('\uc0\u50976 \u54952 \u54616 \u51648  \u50506 \u51008  \u44256 \u44061 \u49324  \u53076 \u46300 \u51077 \u45768 \u45796 .');\
+    \}\
+  \};\
+\
+  // \uc0\u47196 \u44536 \u50500 \u50883  \u52376 \u47532 \
+  const handleLogout = () => \{\
+    setCurrentCompany(null);\
+    setIsAdmin(false);\
+    setAppMode('login');\
+    setLoginCode('');\
+  \};\
+\
+  // KPMC: \uc0\u49888 \u44508  \u44256 \u44061 \u49324  \u46321 \u47197 \
+  const handleAddCompany = async () => \{\
+    if (!user) return showToast('\uc0\u49436 \u48260  \u50672 \u44208 \u51012  \u54869 \u51064 \u54644 \u51452 \u49464 \u50836 .');\
+    if (!newCompanyName.trim()) return showToast('\uc0\u44256 \u44061 \u49324 \u47749 \u51012  \u51077 \u47141 \u54644 \u51452 \u49464 \u50836 .');\
+    \
+    // 6\uc0\u51088 \u47532  \u47004 \u45924  \u53076 \u46300  \u49373 \u49457 \
+    const code = Math.floor(100000 + Math.random() * 900000).toString();\
+    \
+    try \{\
+      const newRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'companies'));\
+      await setDoc(newRef, \{ \
+        name: newCompanyName, \
+        code: code, \
+        createdAt: getCurrentDate() \
+      \});\
+      setNewCompanyName('');\
+      showToast(`$\{newCompanyName\} \uc0\u44256 \u44061 \u49324 \u44032  \u46321 \u47197 \u46104 \u50632 \u49845 \u45768 \u45796 .`);\
+    \} catch (e) \{\
+      showToast('\uc0\u46321 \u47197  \u51473  \u50724 \u47448 \u44032  \u48156 \u49373 \u54664 \u49845 \u45768 \u45796 .');\
+      console.error(e);\
+    \}\
+  \};\
+\
+  // \uc0\u47928 \u49436  \u48320 \u44221  \u54648 \u46308 \u47084 \
+  const handleDocumentChange = (clauseId, docId, field, value) => \{\
+    const newData = systemData.map(clause => \{\
+      if (clause.id === clauseId) \{\
+        return \{\
+          ...clause,\
+          documents: clause.documents.map(doc => \{\
+            if (doc.id === docId) \{\
+              return \{ ...doc, [field]: value \};\
+            \}\
+            return doc;\
+          \})\
+        \};\
+      \}\
+      return clause;\
+    \});\
+    setSystemData(newData);\
+  \};\
+\
+  // \uc0\u49436 \u48260 \u50640  \u45936 \u51060 \u53552  \u46041 \u44592 \u54868 \
+  const saveToServer = async () => \{\
+    if (!user || !currentCompany) \{\
+      showToast('\uc0\u49436 \u48260 \u50640  \u50672 \u44208 \u46104 \u50612  \u51080 \u51648  \u50506 \u49845 \u45768 \u45796 .');\
+      return;\
+    \}\
+    setIsSyncing(true);\
+    try \{\
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'company_data', currentCompany.id);\
+      await setDoc(docRef, \{ systemData \});\
+      showToast('\uc0\u49436 \u48260 \u50640  \u49457 \u44277 \u51201 \u51004 \u47196  \u46041 \u44592 \u54868 \u46104 \u50632 \u49845 \u45768 \u45796 .');\
+    \} catch (error) \{\
+      console.error("\uc0\u51200 \u51109  \u50724 \u47448 :", error);\
+      showToast('\uc0\u49436 \u48260  \u51200 \u51109  \u51473  \u50724 \u47448 \u44032  \u48156 \u49373 \u54664 \u49845 \u45768 \u45796 .');\
+    \} finally \{\
+      setIsSyncing(false);\
+    \}\
+  \};\
+\
+  // 1. JSON \uc0\u45236 \u48372 \u45236 \u44592  (\u45936 \u51060 \u53552  \u48177 \u50629 \u50857 )\
+  const exportDataJson = () => \{\
+    const dataStr = JSON.stringify(systemData, null, 2);\
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);\
+    const exportFileDefaultName = `$\{currentCompany.name\}_ISO45001_$\{getCurrentDate()\}.json`;\
+    const linkElement = document.createElement('a');\
+    linkElement.setAttribute('href', dataUri);\
+    linkElement.setAttribute('download', exportFileDefaultName);\
+    linkElement.click();\
+    showToast('JSON \uc0\u45936 \u51060 \u53552 \u44032  \u45236 \u48372 \u45236 \u51276 \u49845 \u45768 \u45796 .');\
+  \};\
+\
+  // 2. \uc0\u53581 \u49828 \u53944  \u47532 \u54252 \u53944  \u45236 \u48372 \u45236 \u44592  (\u49892 \u51228  \u52968 \u49444 \u54021  \u51228 \u52636 /\u48372 \u44256 \u50857 )\
+  const exportDataReport = () => \{\
+    let reportText = "=========================================\\n";\
+    reportText += `   [$\{currentCompany.name\}] ISO 45001 \uc0\u50504 \u51204 \u48372 \u44148 \u44221 \u50689 \u49884 \u49828 \u53596  \u47928 \u49436 \u54868 \\n`;\
+    reportText += "=========================================\\n\\n";\
+\
+    systemData.forEach(clause => \{\
+      reportText += `[ $\{clause.title\} ]\\n\\n`;\
+      clause.documents.forEach(doc => \{\
+        const statusText = doc.status === 'completed' || doc.status === 'approved' ? '\uc0\u49849 \u51064 \u50756 \u47308 ' : doc.status === 'review' ? '\u44160 \u53664 \u51473 ' : '\u51089 \u49457 \u51204 ';\
+        reportText += `\uc0\u9654  \u47928 \u49436 \u47749 : $\{doc.title\} (\u51312 \u54637  $\{doc.id\}) - [$\{statusText\}]\\n`;\
+        reportText += `\uc0\u9654  \u50836 \u44396 \u49324 \u54637 : $\{doc.requirements\}\\n`;\
+        reportText += `-----------------------------------------\\n`;\
+        reportText += `$\{doc.content ? doc.content : '\uc0\u45236 \u50857 \u51060  \u50630 \u49845 \u45768 \u45796 .'\}\\n\\n`;\
+      \});\
+      reportText += "\\n";\
+    \});\
+\
+    const dataUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportText);\
+    const exportFileDefaultName = `$\{currentCompany.name\}_ISO45001_Report_$\{getCurrentDate()\}.txt`;\
+    const linkElement = document.createElement('a');\
+    linkElement.setAttribute('href', dataUri);\
+    linkElement.setAttribute('download', exportFileDefaultName);\
+    linkElement.click();\
+    showToast('\uc0\u47532 \u54252 \u53944  \u47928 \u49436 \u44032  \u45236 \u48372 \u45236 \u51276 \u49845 \u45768 \u45796 .');\
+  \};\
+\
+  const importDataJson = (event) => \{\
+    const fileReader = new FileReader();\
+    fileReader.readAsText(event.target.files[0], "UTF-8");\
+    fileReader.onload = e => \{\
+      try \{\
+        const importedData = JSON.parse(e.target.result);\
+        setSystemData(importedData);\
+        showToast('\uc0\u45936 \u51060 \u53552 \u47484  \u49457 \u44277 \u51201 \u51004 \u47196  \u48520 \u47084 \u50772 \u49845 \u45768 \u45796 .');\
+      \} catch (error) \{\
+        showToast('\uc0\u51096 \u47803 \u46108  \u54028 \u51068  \u54805 \u49885 \u51077 \u45768 \u45796 .');\
+      \}\
+    \};\
+  \};\
+\
+  // \uc0\u51088 \u50984  \u47928 \u49436  \u52628 \u44032  \u44592 \u45733 \
+  const handleAddDocument = () => \{\
+    if (!newDoc.id || !newDoc.title) return showToast('\uc0\u47928 \u49436  \u48264 \u54840 \u50752  \u51228 \u47785 \u51012  \u51077 \u47141 \u54644 \u51452 \u49464 \u50836 .');\
+    const newData = systemData.map(clause => \{\
+      if (clause.id === targetClauseId) \{\
+        return \{\
+          ...clause,\
+          documents: [...clause.documents, \{ \
+            ...newDoc, content: '', status: 'draft', version: '1.0', lastModified: getCurrentDate(),\
+            example: 'KPMC \uc0\u50696 \u49884 : \u49352 \u47196  \u52628 \u44032 \u46108  \u44508 \u51221  \u46608 \u45716  \u51208 \u52264 \u49436 \u50640  \u47582 \u45716  \u45236 \u50857 \u51012  \u51060  \u50689 \u50669 \u50640  \u44592 \u51077 \u54616 \u49901 \u49884 \u50724 .'\
+          \}]\
+        \};\
+      \}\
+      return clause;\
+    \});\
+    setSystemData(newData);\
+    setIsAddModalOpen(false);\
+    setNewDoc(\{ id: '', title: '', requirements: '' \});\
+    setActiveClauseId(targetClauseId);\
+    setActiveDocId(newDoc.id);\
+    setViewMode('editor');\
+    showToast('\uc0\u49352 \u47196 \u50868  \u47928 \u49436 \u44032  \u52628 \u44032 \u46104 \u50632 \u49845 \u45768 \u45796 .');\
+  \};\
+\
+  const insertMarkdown = (prefix, suffix = '') => \{\
+    const textarea = document.getElementById('document-editor');\
+    if (!textarea) return;\
+    const start = textarea.selectionStart;\
+    const end = textarea.selectionEnd;\
+    const activeDoc = systemData.find(c => c.id === activeClauseId)?.documents.find(d => d.id === activeDocId);\
+    const text = activeDoc?.content || '';\
+    const before = text.substring(0, start);\
+    const selected = text.substring(start, end);\
+    const after = text.substring(end);\
+    const newText = before + prefix + selected + suffix + after;\
+    handleDocumentChange(activeClauseId, activeDocId, 'content', newText);\
+    setTimeout(() => \{\
+      textarea.focus();\
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);\
+    \}, 0);\
+  \};\
+\
+  const handleLoadExample = () => \{\
+    const activeDoc = systemData.find(c => c.id === activeClauseId)?.documents.find(d => d.id === activeDocId);\
+    if (!activeDoc?.example) return showToast('\uc0\u54644 \u45817  \u51312 \u54637 \u51032  KPMC \u50696 \u49884  \u47928 \u49436 \u44032  \u51456 \u48708 \u46104 \u51648  \u50506 \u50520 \u49845 \u45768 \u45796 .');\
+    if (activeDoc.content.trim() !== '') \{\
+      if (!window.confirm('\uc0\u44592 \u51316  \u51089 \u49457 \u46108  \u45236 \u50857 \u51060  \u49325 \u51228 \u46104 \u44256  KPMC \u50696 \u49884  \u53596 \u54540 \u47551 \u51004 \u47196  \u45934 \u50612 \u50416 \u44592  \u46121 \u45768 \u45796 . \u44228 \u49549 \u54616 \u49884 \u44192 \u49845 \u45768 \u44620 ?')) return;\
+    \}\
+    handleDocumentChange(activeClauseId, activeDocId, 'content', activeDoc.example);\
+    handleDocumentChange(activeClauseId, activeDocId, 'status', 'in_progress');\
+    showToast('KPMC \uc0\u52968 \u49444 \u54021  \u53596 \u54540 \u47551 \u51060  \u51201 \u50857 \u46104 \u50632 \u49845 \u45768 \u45796 .');\
+  \};\
+\
+  // \uc0\u44160 \u49353  \u54596 \u53552 \u47553 \
+  const filteredData = systemData.map(clause => \{\
+    if (!searchQuery) return clause;\
+    const query = searchQuery.toLowerCase();\
+    const isClauseMatch = clause.title.toLowerCase().includes(query);\
+    const filteredDocs = clause.documents.filter(doc => \
+      doc.title.toLowerCase().includes(query) || doc.id.toLowerCase().includes(query) ||\
+      (doc.content && doc.content.toLowerCase().includes(query)) ||\
+      (doc.requirements && doc.requirements.toLowerCase().includes(query))\
+    );\
+    if (isClauseMatch || filteredDocs.length > 0) \{\
+      return \{ ...clause, documents: isClauseMatch && filteredDocs.length === 0 ? clause.documents : filteredDocs \};\
+    \}\
+    return null;\
+  \}).filter(Boolean);\
+\
+  const getStatusIcon = (status) => \{\
+    switch (status) \{\
+      case 'completed':\
+      case 'approved': return <CheckCircle className="w-4 h-4 text-emerald-500" />;\
+      case 'in_progress':\
+      case 'review': return <Clock className="w-4 h-4 text-amber-500" />;\
+      default: return <Circle className="w-4 h-4 text-slate-300" />;\
+    \}\
+  \};\
+\
+  const getStatusText = (status) => \{\
+    switch (status) \{\
+      case 'completed':\
+      case 'approved': return '\uc0\u49849 \u51064 /\u48176 \u54252  \u50756 \u47308 ';\
+      case 'in_progress':\
+      case 'review': return '\uc0\u44160 \u53664  \u51473 ';\
+      default: return '\uc0\u52488 \u50504  \u51089 \u49457 /\u45824 \u44592 ';\
+    \}\
+  \};\
+\
+  // ---- \uc0\u47116 \u45908 \u47553  1. \u47196 \u44536 \u51064  \u54868 \u47732  ----\
+  if (appMode === 'login') \{\
+    return (\
+      <div className="flex items-center justify-center min-h-screen bg-slate-900 font-sans text-slate-800">\
+        <div className="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 overflow-hidden relative">\
+          \
+          \{/* \uc0\u44256 \u44061 \u49324  \u47196 \u44536 \u51064  \u50689 \u50669  */\}\
+          <div className="pr-0 md:pr-10 border-b md:border-b-0 md:border-r border-slate-200 pb-10 md:pb-0">\
+            <div className="mb-8">\
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">\uc0\u44256 \u44061 \u49324  \u49884 \u49828 \u53596  \u51217 \u49549 </h2>\
+              <p className="text-sm text-slate-500">KPMC\uc0\u50640 \u49436  \u48156 \u44553 \u48155 \u51008  \u44256 \u44061 \u49324  \u51204 \u50857  \u51217 \u44540  \u53076 \u46300 \u47484  \u51077 \u47141 \u54616 \u50668  \u51088 \u49324 \u51032  \u47928 \u49436  \u49884 \u49828 \u53596 \u50640  \u51217 \u49549 \u54616 \u49464 \u50836 .</p>\
+            </div>\
+            <div className="space-y-4">\
+              <div>\
+                <label className="block text-sm font-semibold text-slate-700 mb-2">\uc0\u44256 \u44061 \u49324  \u51217 \u44540  \u53076 \u46300  (6\u51088 \u47532 )</label>\
+                <div className="relative">\
+                  <Key className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />\
+                  <input \
+                    type="text" \
+                    placeholder="\uc0\u50696 : 123456" \
+                    value=\{loginCode\}\
+                    onChange=\{(e) => setLoginCode(e.target.value)\}\
+                    onKeyDown=\{(e) => e.key === 'Enter' && handleClientLogin()\}\
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-lg font-mono tracking-widest"\
+                  />\
+                </div>\
+              </div>\
+              <button \
+                onClick=\{handleClientLogin\}\
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"\
+              >\
+                \uc0\u49884 \u49828 \u53596  \u51077 \u51109  <ChevronRight className="w-5 h-5" />\
+              </button>\
+            </div>\
+          </div>\
+\
+          \{/* KPMC \uc0\u44288 \u47532 \u51088  \u47196 \u44536 \u51064  \u50689 \u50669  */\}\
+          <div className="pl-0 md:pl-10 pt-10 md:pt-0 flex flex-col justify-center items-center bg-slate-50/50 rounded-xl">\
+            <div className="mb-6">\
+              <KpmcLogo />\
+            </div>\
+            <h2 className="text-lg font-bold text-slate-800 mb-6 text-center">\uc0\u52968 \u49444 \u54021  \u48376 \u48512  \u44288 \u47532 \u51088  \u47196 \u44536 \u51064 </h2>\
+            \
+            <div className="space-y-3 w-full max-w-xs mb-6">\
+              <div className="relative">\
+                <User className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />\
+                <input \
+                  type="text" \
+                  placeholder="\uc0\u44288 \u47532 \u51088  \u50500 \u51060 \u46356 " \
+                  value=\{adminIdInput\}\
+                  onChange=\{(e) => setAdminIdInput(e.target.value)\}\
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"\
+                />\
+              </div>\
+              <div className="relative">\
+                <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />\
+                <input \
+                  type="password" \
+                  placeholder="\uc0\u48708 \u48128 \u48264 \u54840 " \
+                  value=\{adminPwInput\}\
+                  onChange=\{(e) => setAdminPwInput(e.target.value)\}\
+                  onKeyDown=\{(e) => e.key === 'Enter' && handleAdminLogin()\}\
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"\
+                />\
+              </div>\
+            </div>\
+\
+            <button \
+              onClick=\{handleAdminLogin\}\
+              className="w-full max-w-xs bg-white border-2 border-[#4DB6AC] text-[#4DB6AC] hover:bg-[#4DB6AC] hover:text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"\
+            >\
+              <ShieldCheck className="w-5 h-5" /> KPMC \uc0\u44288 \u47532 \u51088  \u54252 \u53560  \u51217 \u49549 \
+            </button>\
+            <p className="mt-4 text-xs text-slate-400 text-center px-6">\
+              * \uc0\u48376  \u51217 \u49549 \u44396 \u50669 \u51008  KPMC \u45236 \u48512  \u52968 \u49444 \u53556 \u53944  \u48143  \u49884 \u49828 \u53596  \u44288 \u47532 \u51088  \u51204 \u50857 \u51077 \u45768 \u45796 . \u54728 \u44032 \u46104 \u51648  \u50506 \u51008  \u51217 \u44540 \u51012  \u44552 \u54633 \u45768 \u45796 .\
+            </p>\
+          </div>\
+          \
+        </div>\
+\
+        \{toastMessage && (\
+          <div className="fixed bottom-8 right-8 bg-slate-800 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-fade-in-up z-50">\
+            <CheckCircle className="w-5 h-5 text-[#4DB6AC]" />\
+            <span className="text-sm font-medium tracking-wide">\{toastMessage\}</span>\
+          </div>\
+        )\}\
+      </div>\
+    );\
+  \}\
+\
+  // ---- \uc0\u47116 \u45908 \u47553  2. KPMC \u44288 \u47532 \u51088  \u45824 \u49884 \u48372 \u46300  ----\
+  if (appMode === 'admin') \{\
+    return (\
+      <div className="min-h-screen bg-slate-100 font-sans text-slate-800 p-8">\
+        <div className="max-w-6xl mx-auto space-y-6">\
+          \
+          <header className="flex items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200">\
+            <div className="flex items-center gap-4">\
+              <KpmcLogo />\
+              <div className="border-l-2 border-slate-200 pl-4">\
+                <h1 className="text-xl font-bold text-slate-900">ISO 45001 \uc0\u44256 \u44061 \u49324  \u53685 \u54633  \u44288 \u47532  \u45824 \u49884 \u48372 \u46300 </h1>\
+                <p className="text-sm text-slate-500">\uc0\u52968 \u49444 \u54021  \u45824 \u49345  \u44592 \u50629  \u47785 \u47197  \u48143  \u44060 \u48324  \u49884 \u49828 \u53596  \u51217 \u44540 </p>\
+              </div>\
+            </div>\
+            <div className="flex items-center gap-2">\
+              <button \
+                onClick=\{() => \{\
+                  setEditAdminId(adminConfig?.adminId || '');\
+                  setEditAdminPw(adminConfig?.adminPw || '');\
+                  setIsSettingsModalOpen(true);\
+                \}\} \
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"\
+              >\
+                <Settings className="w-4 h-4" /> \uc0\u44228 \u51221  \u49444 \u51221 \
+              </button>\
+              <button onClick=\{handleLogout\} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 hover:bg-slate-900 rounded-lg transition-colors">\
+                <LogOut className="w-4 h-4" /> \uc0\u47196 \u44536 \u50500 \u50883 \
+              </button>\
+            </div>\
+          </header>\
+\
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">\
+            \
+            \{/* \uc0\u49888 \u44508  \u44256 \u44061 \u49324  \u46321 \u47197  \u54056 \u45328  */\}\
+            <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">\
+              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">\
+                <Building className="w-5 h-5 text-[#4DB6AC]" />\
+                <h2 className="text-lg font-bold text-slate-800">\uc0\u49888 \u44508  \u44256 \u44061 \u49324  \u46321 \u47197 </h2>\
+              </div>\
+              <div className="space-y-4">\
+                <div>\
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u44256 \u44061 \u49324 (\u44592 \u50629 ) \u47749 </label>\
+                  <input \
+                    type="text" \
+                    placeholder="\uc0\u50696 : \u12828 \u54620 \u44397 \u44148 \u49444 " \
+                    value=\{newCompanyName\}\
+                    onChange=\{(e) => setNewCompanyName(e.target.value)\}\
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"\
+                  />\
+                </div>\
+                <button \
+                  onClick=\{handleAddCompany\}\
+                  className="w-full bg-[#4DB6AC] hover:bg-[#3D968E] text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"\
+                >\
+                  <Plus className="w-4 h-4" /> \uc0\u44256 \u44061 \u49324  \u46321 \u47197  \u48143  \u53076 \u46300  \u48156 \u44553 \
+                </button>\
+              </div>\
+              <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-500 leading-relaxed">\
+                \uc0\u44256 \u44061 \u49324 \u47484  \u46321 \u47197 \u54616 \u47732  \u51088 \u46041 \u51004 \u47196  **6\u51088 \u47532  \u51217 \u49549  \u53076 \u46300 **\u44032  \u49373 \u49457 \u46121 \u45768 \u45796 . \u54644 \u45817  \u53076 \u46300 \u47484  \u44256 \u44061 \u49324  \u45812 \u45817 \u51088 \u50640 \u44172  \u51204 \u45804 \u54616 \u50668  \u49884 \u49828 \u53596 \u50640  \u51217 \u49549 \u54624  \u49688  \u51080 \u46020 \u47197  \u50504 \u45236 \u54644 \u51452 \u49901 \u49884 \u50724 .\
+              </div>\
+            </div>\
+\
+            \{/* \uc0\u46321 \u47197 \u46108  \u44256 \u44061 \u49324  \u47785 \u47197  */\}\
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">\
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">\
+                <div className="flex items-center gap-2">\
+                  <Users className="w-5 h-5 text-indigo-500" />\
+                  <h2 className="text-lg font-bold text-slate-800">\uc0\u46321 \u47197 \u46108  \u44256 \u44061 \u49324  \u47785 \u47197 </h2>\
+                </div>\
+                <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full">\{companies.length\}\uc0\u44060 \u49324 </span>\
+              </div>\
+              \
+              <div className="overflow-x-auto">\
+                <table className="w-full text-left text-sm text-slate-600">\
+                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">\
+                    <tr>\
+                      <th className="px-6 py-4">\uc0\u44256 \u44061 \u49324 \u47749 </th>\
+                      <th className="px-6 py-4 text-center">\uc0\u51217 \u49549  \u53076 \u46300  (Client Key)</th>\
+                      <th className="px-6 py-4">\uc0\u46321 \u47197 \u51068 \u51088 </th>\
+                      <th className="px-6 py-4 text-right">\uc0\u44288 \u47532  \u51089 \u50629 </th>\
+                    </tr>\
+                  </thead>\
+                  <tbody>\
+                    \{companies.length === 0 ? (\
+                      <tr>\
+                        <td colSpan="4" className="px-6 py-12 text-center text-slate-400">\uc0\u46321 \u47197 \u46108  \u44256 \u44061 \u49324 \u44032  \u50630 \u49845 \u45768 \u45796 . \u51340 \u52769  \u54056 \u45328 \u50640 \u49436  \u46321 \u47197 \u54644 \u51452 \u49464 \u50836 .</td>\
+                      </tr>\
+                    ) : companies.map(comp => (\
+                      <tr key=\{comp.id\} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">\
+                        <td className="px-6 py-4 font-bold text-slate-800">\{comp.name\}</td>\
+                        <td className="px-6 py-4 text-center">\
+                          <span className="font-mono bg-slate-200 text-slate-800 px-3 py-1.5 rounded text-lg tracking-widest">\{comp.code\}</span>\
+                        </td>\
+                        <td className="px-6 py-4">\{comp.createdAt\}</td>\
+                        <td className="px-6 py-4 text-right">\
+                          <button \
+                            onClick=\{() => \{\
+                              setCurrentCompany(comp);\
+                              setAppMode('system');\
+                            \}\}\
+                            className="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 px-4 py-2 rounded-md font-semibold transition-colors"\
+                          >\
+                            \uc0\u49884 \u49828 \u53596  \u51217 \u49549 \
+                          </button>\
+                        </td>\
+                      </tr>\
+                    ))\}\
+                  </tbody>\
+                </table>\
+              </div>\
+            </div>\
+\
+          </div>\
+        </div>\
+        \
+        \{toastMessage && (\
+          <div className="fixed bottom-8 right-8 bg-slate-800 text-white px-5 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-fade-in-up z-50">\
+            <CheckCircle className="w-5 h-5 text-emerald-400" />\
+            <span className="text-sm font-medium">\{toastMessage\}</span>\
+          </div>\
+        )\}\
+\
+        \{/* \uc0\u44288 \u47532 \u51088  \u44228 \u51221  \u49444 \u51221  \u47784 \u45804  */\}\
+        \{isSettingsModalOpen && (\
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">\
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up">\
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">\
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">\
+                  <Settings className="w-5 h-5 text-[#4DB6AC]" />\
+                  \uc0\u44288 \u47532 \u51088  \u44228 \u51221  \u49444 \u51221 \
+                </h3>\
+                <button onClick=\{() => setIsSettingsModalOpen(false)\} className="text-slate-400 hover:text-slate-600 transition-colors">\
+                  <X className="w-5 h-5" />\
+                </button>\
+              </div>\
+              <div className="p-6 space-y-4">\
+                <div>\
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u49352  \u44288 \u47532 \u51088  \u50500 \u51060 \u46356 </label>\
+                  <input \
+                    type="text" \
+                    value=\{editAdminId\}\
+                    onChange=\{(e) => setEditAdminId(e.target.value)\}\
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"\
+                  />\
+                </div>\
+                <div>\
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u49352  \u44288 \u47532 \u51088  \u48708 \u48128 \u48264 \u54840 </label>\
+                  <input \
+                    type="password" \
+                    value=\{editAdminPw\}\
+                    onChange=\{(e) => setEditAdminPw(e.target.value)\}\
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4DB6AC] text-sm"\
+                  />\
+                </div>\
+              </div>\
+              <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">\
+                <button \
+                  onClick=\{() => setIsSettingsModalOpen(false)\}\
+                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors"\
+                >\
+                  \uc0\u52712 \u49548 \
+                </button>\
+                <button \
+                  onClick=\{handleUpdateAdminConfig\}\
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#4DB6AC] rounded-md hover:bg-[#3D968E] shadow-sm transition-colors"\
+                >\
+                  \uc0\u48320 \u44221  \u51200 \u51109 \
+                </button>\
+              </div>\
+            </div>\
+          </div>\
+        )\}\
+      </div>\
+    );\
+  \}\
+\
+  // ---- \uc0\u47116 \u45908 \u47553  3. \u44060 \u48324  \u44256 \u44061 \u49324  \u49884 \u49828 \u53596  \u54868 \u47732  ----\
+  const totalDocs = systemData.reduce((acc, clause) => acc + clause.documents.length, 0);\
+  const completedDocs = systemData.reduce((acc, clause) => acc + clause.documents.filter(d => d.status === 'completed' || d.status === 'approved').length, 0);\
+  const progressPercent = Math.round((completedDocs / totalDocs) * 100) || 0;\
+  const activeClause = systemData.find(c => c.id === activeClauseId);\
+  const activeDoc = activeClause?.documents.find(d => d.id === activeDocId);\
+\
+  return (\
+    <div className="flex flex-col h-screen bg-slate-100 text-slate-800 font-sans">\
+      \
+      \{/* Header */\}\
+      <header className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 shadow-md z-10">\
+        <div className="flex items-center gap-4">\
+          <KpmcLogo />\
+          <div className="ml-2 flex flex-col justify-center">\
+            <div className="flex items-center gap-2">\
+              <h1 className="text-lg font-bold text-white tracking-wide">\{currentCompany?.name\}</h1>\
+              <span className="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Workspace</span>\
+            </div>\
+            <p className="text-xs text-[#4DB6AC] font-medium tracking-wider mt-0.5">ISO 45001 \uc0\u49884 \u49828 \u53596  \u49828 \u53916 \u46356 \u50724 </p>\
+          </div>\
+        </div>\
+        <div className="flex items-center gap-5">\
+          \{isAdmin && (\
+            <button \
+              onClick=\{() => setAppMode('admin')\}\
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-indigo-300 bg-indigo-900/50 hover:bg-indigo-800 border border-indigo-700 rounded transition-colors mr-2"\
+            >\
+              <ArrowLeft className="w-3 h-3" /> \uc0\u44288 \u47532 \u51088  \u47785 \u47197 \u51004 \u47196 \
+            </button>\
+          )\}\
+\
+          <div className="flex items-center gap-3 text-sm font-medium hidden md:flex">\
+            <span className="text-slate-300">\uc0\u51204 \u52404  \u51652 \u54665 \u47456 </span>\
+            <div className="w-32 bg-slate-700 rounded-full h-2.5 shadow-inner">\
+              <div className="bg-[#4DB6AC] h-2.5 rounded-full transition-all duration-500" style=\{\{ width: `$\{progressPercent\}%` \}\}></div>\
+            </div>\
+            <span className="text-[#4DB6AC] w-10 text-right">\{progressPercent\}%</span>\
+          </div>\
+          \
+          <div className="flex items-center border-l border-slate-700 pl-5 gap-2">\
+            <button \
+              onClick=\{() => setViewMode(viewMode === 'editor' ? 'dashboard' : 'editor')\}\
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-md transition-colors border border-slate-600"\
+            >\
+              <BarChart className="w-4 h-4 text-[#4DB6AC]" />\
+              \{viewMode === 'editor' ? '\uc0\u45824 \u49884 \u48372 \u46300  \u48372 \u44592 ' : '\u50640 \u46356 \u53552  \u48372 \u44592 '\}\
+            </button>\
+            \
+            <button \
+              onClick=\{saveToServer\}\
+              disabled=\{isSyncing\}\
+              className=\{`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md transition-colors shadow-sm $\{isSyncing ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'\}`\}\
+            >\
+              <Save className=\{`w-4 h-4 $\{isSyncing ? 'animate-spin' : ''\}`\} />\
+              \{isSyncing ? '\uc0\u46041 \u44592 \u54868  \u51473 ...' : '\u49436 \u48260 \u50640  \u51200 \u51109 '\}\
+            </button>\
+\
+            <div className="relative group hidden sm:block">\
+              <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-200 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded-md transition-colors">\
+                <Download className="w-4 h-4 text-slate-400" />\
+                \uc0\u45236 \u48372 \u45236 \u44592 \
+              </button>\
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-md shadow-xl hidden group-hover:block z-50 overflow-hidden">\
+                <button onClick=\{exportDataReport\} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">\
+                  <FileDown className="w-4 h-4 text-indigo-600"/> \uc0\u47560 \u53356 \u45796 \u50868 /\u53581 \u49828 \u53944  \u47532 \u54252 \u53944 \
+                </button>\
+                <button onClick=\{exportDataJson\} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-t border-slate-100 transition-colors">\
+                  <Download className="w-4 h-4 text-emerald-600"/> JSON \uc0\u48177 \u50629  \u45936 \u51060 \u53552 \
+                </button>\
+              </div>\
+            </div>\
+\
+            <button onClick=\{handleLogout\} title="\uc0\u47196 \u44536 \u50500 \u50883 " className="ml-2 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors">\
+              <LogOut className="w-5 h-5" />\
+            </button>\
+          </div>\
+        </div>\
+      </header>\
+\
+      \{/* Main Content */\}\
+      <div className="flex flex-1 overflow-hidden">\
+        \
+        \{/* Sidebar Navigation */\}\
+        <aside className="w-72 bg-slate-800 border-r border-slate-700 flex flex-col overflow-y-auto shadow-inner">\
+          <div className="p-5 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-700 bg-slate-800/50 sticky top-0 z-10 space-y-3">\
+            <span>\uc0\u50836 \u44396 \u49324 \u54637  \u47785 \u52264 </span>\
+            <div className="relative">\
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />\
+              <input \
+                type="text" \
+                placeholder="\uc0\u47928 \u49436  \u48264 \u54840 , \u51228 \u47785 , \u45236 \u50857  \u44160 \u49353 ..." \
+                value=\{searchQuery\}\
+                onChange=\{(e) => setSearchQuery(e.target.value)\}\
+                className="w-full bg-slate-900 border border-slate-600 text-slate-200 text-xs rounded-md pl-9 pr-3 py-2 focus:outline-none focus:border-[#4DB6AC] transition-colors"\
+              />\
+            </div>\
+          </div>\
+          <nav className="flex-1 px-3 py-4 space-y-2">\
+            \{filteredData.length === 0 ? (\
+              <div className="text-center text-slate-500 text-sm py-4">\uc0\u44160 \u49353  \u44208 \u44284 \u44032  \u50630 \u49845 \u45768 \u45796 .</div>\
+            ) : filteredData.map((clause) => \{\
+              const isActive = activeClauseId === clause.id;\
+              const completedInClause = clause.documents.filter(d => d.status === 'completed' || d.status === 'approved').length;\
+              \
+              return (\
+                <div key=\{clause.id\} className="mb-2">\
+                  <button\
+                    onClick=\{() => \{\
+                      setActiveClauseId(clause.id);\
+                      if (clause.documents.length > 0) setActiveDocId(clause.documents[0].id);\
+                      setViewMode('editor');\
+                    \}\}\
+                    className=\{`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-all $\{\
+                      isActive ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'\
+                    \}`\}\
+                  >\
+                    <div className="flex items-center gap-2.5">\
+                      <FolderOpen className=\{`w-4 h-4 $\{isActive ? 'text-indigo-200' : 'text-slate-400'\}`\} />\
+                      <span className="truncate">\{clause.title\}</span>\
+                    </div>\
+                    <span className=\{`text-xs px-2 py-0.5 rounded-full $\{isActive ? 'bg-indigo-500/50' : 'bg-slate-700 text-slate-400'\}`\}>\
+                      \{completedInClause\}/\{clause.documents.length\}\
+                    </span>\
+                  </button>\
+                  \
+                  \{isActive && viewMode === 'editor' && (\
+                    <div className="ml-5 mt-2 space-y-1 pl-3 border-l-2 border-slate-600">\
+                      \{clause.documents.map(doc => (\
+                        <button\
+                          key=\{doc.id\}\
+                          onClick=\{() => setActiveDocId(doc.id)\}\
+                          className=\{`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all $\{\
+                            activeDocId === doc.id ? 'bg-slate-700 text-white font-medium shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'\
+                          \}`\}\
+                        >\
+                          \{getStatusIcon(doc.status)\}\
+                          <span className="truncate text-left flex-1">\{doc.title\}</span>\
+                        </button>\
+                      ))\}\
+\
+                      \{/* \uc0\u52628 \u44032  \u47928 \u49436  \u46321 \u47197  \u48260 \u53948  */\}\
+                      <button \
+                        onClick=\{() => \{ setTargetClauseId(clause.id); setIsAddModalOpen(true); \}\}\
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 mt-2 rounded-md text-xs font-semibold border border-dashed border-slate-600 text-slate-400 hover:text-indigo-300 hover:border-indigo-400 hover:bg-slate-800 transition-all"\
+                      >\
+                        <Plus className="w-3 h-3" />\
+                        \uc0\u51088 \u49324  \u44508 \u51221 /\u47928 \u49436  \u52628 \u44032 \
+                      </button>\
+                    </div>\
+                  )\}\
+                </div>\
+              );\
+            \})\}\
+          </nav>\
+        </aside>\
+\
+        \{/* Editor Area */\}\
+        \{viewMode === 'editor' && activeDoc && (\
+          <main className="flex-1 flex flex-col bg-slate-100 p-8 overflow-y-auto">\
+            <div className="max-w-5xl w-full mx-auto space-y-6">\
+              \
+              <div className="bg-white rounded-lg p-7 shadow-sm border-t-4 border-indigo-600">\
+                <div className="flex items-start justify-between mb-5">\
+                  <div>\
+                    <div className="flex items-center gap-3 text-sm text-indigo-600 font-semibold mb-2">\
+                      <span className="bg-indigo-50 px-2 py-1 rounded border border-indigo-100 text-indigo-700">\uc0\u47928 \u49436 \u48264 \u54840 : \{activeDoc.id\}</span>\
+                      <ChevronRight className="w-4 h-4 text-slate-400" />\
+                      <span className="text-slate-600">\{activeClause.title\}</span>\
+                      <div className="flex items-center gap-1 ml-2 px-2 py-1 bg-slate-100 rounded text-slate-500 text-xs font-medium border border-slate-200">\
+                        <History className="w-3 h-3" />\
+                        <span>Ver \{activeDoc.version || '1.0'\}</span>\
+                        <span className="ml-1 border-l border-slate-300 pl-2">\uc0\u44060 \u51221 \u51068 : \{activeDoc.lastModified || getCurrentDate()\}</span>\
+                      </div>\
+                    </div>\
+                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight">\{activeDoc.title\}</h2>\
+                  </div>\
+                  \
+                  <div className="flex flex-col items-end gap-2">\
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">\uc0\u47928 \u49436  \u49849 \u51064  \u49345 \u53468  (ISO 7.5.2)</span>\
+                    <select\
+                      value=\{activeDoc.status\}\
+                      onChange=\{(e) => \{\
+                        handleDocumentChange(activeClauseId, activeDocId, 'status', e.target.value);\
+                        handleDocumentChange(activeClauseId, activeDocId, 'lastModified', getCurrentDate());\
+                      \}\}\
+                      className=\{`text-sm rounded-md border-0 py-2 pl-4 pr-10 font-bold shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 transition-colors $\{\
+                        activeDoc.status === 'completed' || activeDoc.status === 'approved' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 focus:ring-emerald-600' :\
+                        activeDoc.status === 'in_progress' || activeDoc.status === 'review' ? 'bg-amber-50 text-amber-700 ring-amber-200 focus:ring-amber-600' :\
+                        'bg-slate-50 text-slate-700 ring-slate-200 focus:ring-indigo-600'\
+                      \}`\}\
+                    >\
+                      <option value="not_started">\uc0\u52488 \u50504  \u51089 \u49457 /\u45824 \u44592 </option>\
+                      <option value="review">\uc0\u44160 \u53664  \u51473  (Under Review)</option>\
+                      <option value="approved">\uc0\u49849 \u51064  \u48143  \u48176 \u54252  \u50756 \u47308 </option>\
+                    </select>\
+                  </div>\
+                </div>\
+                \
+                <div className="flex flex-col gap-4">\
+                  <div className="bg-slate-50 rounded-lg p-5 border border-slate-200 flex justify-between items-center gap-4">\
+                    <div>\
+                      <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-2">\
+                        <FileText className="w-4 h-4 text-[#4DB6AC]" /> ISO 45001 \uc0\u50836 \u44396 \u49324 \u54637  \u48143  \u52980 \u54540 \u46972 \u51060 \u50616 \u49828  \u44032 \u51060 \u46300 \
+                      </h3>\
+                      <p className="text-sm text-slate-600 leading-relaxed">\{activeDoc.requirements\}</p>\
+                    </div>\
+                    <button \
+                      onClick=\{handleLoadExample\}\
+                      className="flex-shrink-0 flex items-center gap-2 bg-white hover:bg-[#4DB6AC]/10 text-[#308A82] border border-[#4DB6AC]/40 px-4 py-2.5 rounded-md transition-colors text-sm font-bold shadow-sm"\
+                    >\
+                      <Lightbulb className="w-4 h-4" />\
+                      KPMC \uc0\u50696 \u49884  \u53596 \u54540 \u47551  \u51201 \u50857 \
+                    </button>\
+                  </div>\
+\
+                  \{/* KPMC \uc0\u54588 \u46300 \u48177  \u50689 \u50669  (\u49849 \u51064  \u50756 \u47308  \u49884  \u49704 \u44608 ) */\}\
+                  \{(activeDoc.status !== 'approved' && activeDoc.status !== 'completed') ? (\
+                    <div className="bg-indigo-50 rounded-lg p-5 border border-indigo-100 shadow-inner">\
+                      <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-2 mb-2">\
+                        <MessageSquare className="w-4 h-4 text-indigo-600" /> KPMC \uc0\u52968 \u49444 \u53556 \u53944  \u54588 \u46300 \u48177  \u48143  \u48372 \u50756  \u50836 \u52397 \
+                      </h3>\
+                      <textarea\
+                        value=\{activeDoc.feedback || ''\}\
+                        onChange=\{(e) => handleDocumentChange(activeClauseId, activeDocId, 'feedback', e.target.value)\}\
+                        readOnly=\{!isAdmin\} // \uc0\u44288 \u47532 \u51088 \u47564  \u54588 \u46300 \u48177  \u49688 \u51221  \u44032 \u45733 \
+                        placeholder=\{isAdmin ? "\uc0\u52968 \u49444 \u53556 \u53944 \u44032  \u47928 \u49436  \u48372 \u50756 \u51216 \u51060 \u45208  \u54588 \u46300 \u48177 \u51012  \u45224 \u44592 \u45716  \u44277 \u44036 \u51077 \u45768 \u45796 ." : "KPMC \u45812 \u45817  \u52968 \u49444 \u53556 \u53944 \u51032  \u54588 \u46300 \u48177 \u51060  \u46321 \u47197 \u46104 \u45716  \u44277 \u44036 \u51077 \u45768 \u45796 ."\}\
+                        className=\{`w-full bg-white/60 border border-indigo-200 rounded-md p-3 text-sm text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none h-20 $\{!isAdmin && 'cursor-not-allowed bg-slate-100/50'\}`\}\
+                      />\
+                    </div>\
+                  ) : (\
+                    <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200 flex items-center gap-3">\
+                      <CheckCircle className="w-5 h-5 text-emerald-600" />\
+                      <div>\
+                        <p className="text-sm font-bold text-emerald-800">\uc0\u49849 \u51064  \u48143  \u44277 \u49885  \u47928 \u49436 \u54868  \u50756 \u47308 </p>\
+                        <p className="text-xs text-emerald-600 mt-0.5">\uc0\u51060  \u47928 \u49436 \u45716  \u52572 \u51333  \u49849 \u51064 \u46104 \u50632 \u49845 \u45768 \u45796 . KPMC \u54588 \u46300 \u48177 \u51060  \u51333 \u47308 \u46104 \u50632 \u51004 \u47728 , \u54596 \u50836  \u49884  \u50500 \u47000  \u50640 \u46356 \u53552 \u50640 \u49436  \u45236 \u50857 \u51012  \u44228 \u49549  \u49688 \u51221  \u48143  \u44060 \u51221 \u54624  \u49688  \u51080 \u49845 \u45768 \u45796 .</p>\
+                      </div>\
+                    </div>\
+                  )\}\
+                </div>\
+              </div>\
+\
+              \{/* Text Editor (A4 Paper Style) */\}\
+              <div className="bg-white shadow-md border border-slate-200 flex flex-col flex-1 min-h-[700px] mx-auto w-full max-w-[210mm]">\
+                <div className="border-b border-slate-200 px-8 py-3 flex items-center justify-between bg-slate-50">\
+                  <span className="text-sm font-bold text-slate-500 tracking-widest uppercase">\uc0\u44277 \u49885  \u47928 \u49436  \u50640 \u46356 \u53552 </span>\
+                  <div className="flex items-center gap-1">\
+                    <button onClick=\{() => insertMarkdown('**', '**')\} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="\uc0\u44405 \u44172 "><Bold className="w-4 h-4" /></button>\
+                    <button onClick=\{() => insertMarkdown('*', '*')\} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="\uc0\u44592 \u50872 \u51076 "><Italic className="w-4 h-4" /></button>\
+                    <div className="w-px h-4 bg-slate-300 mx-1"></div>\
+                    <button onClick=\{() => insertMarkdown('### ', '')\} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="\uc0\u51228 \u47785 "><Heading className="w-4 h-4" /></button>\
+                    <button onClick=\{() => insertMarkdown('- ', '')\} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="\uc0\u47785 \u47197 "><ListIcon className="w-4 h-4" /></button>\
+                  </div>\
+                </div>\
+                <textarea\
+                  id="document-editor"\
+                  value=\{activeDoc.content\}\
+                  onChange=\{(e) => \{\
+                    handleDocumentChange(activeClauseId, activeDocId, 'content', e.target.value);\
+                    if (!activeDoc.version) handleDocumentChange(activeClauseId, activeDocId, 'version', '1.0');\
+                    if (!activeDoc.lastModified) handleDocumentChange(activeClauseId, activeDocId, 'lastModified', getCurrentDate());\
+                  \}\}\
+                  placeholder="\uc0\u51060 \u44275 \u50640  \u44277 \u49885  \u51208 \u52264 , \u51648 \u52840  \u46608 \u45716  \u47588 \u45684 \u50620 \u51032  \u45236 \u50857 \u51012  \u51089 \u49457 \u54616 \u49901 \u49884 \u50724 . (Markdown \u54805 \u49885  \u51648 \u50896 )&#13;&#10;&#13;&#10;\u50696 \u49884 :&#13;&#10;1. \u47785 \u51201 &#13;&#10;2. \u51201 \u50857 \u48276 \u50948 &#13;&#10;3. \u52293 \u51076 \u44284  \u44428 \u54620 &#13;&#10;4. \u50629 \u47924 \u51208 \u52264 "\
+                  className="flex-1 w-full p-12 bg-white resize-none outline-none focus:ring-0 font-sans text-base leading-loose text-slate-800 placeholder-slate-300"\
+                />\
+              </div>\
+\
+            </div>\
+          </main>\
+        )\}\
+\
+        \{/* Dashboard View */\}\
+        \{viewMode === 'dashboard' && (\
+          <main className="flex-1 flex flex-col bg-slate-100 p-8 overflow-y-auto">\
+            <div className="max-w-6xl mx-auto w-full space-y-8">\
+              \
+              <div className="bg-white p-8 rounded-lg shadow-sm border-l-4 border-indigo-600">\
+                <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">[\{currentCompany?.name\}] \uc0\u47928 \u49436 \u54868  \u51652 \u54665  \u54788 \u54889  \u45824 \u49884 \u48372 \u46300 </h2>\
+                <p className="text-slate-600">ISO 45001 \uc0\u44508 \u44201 \u50640  \u46384 \u47480  \u50504 \u51204 \u48372 \u44148 \u44221 \u50689 \u49884 \u49828 \u53596  \u44396 \u52629  \u49345 \u53468 \u47484  \u51333 \u54633 \u51201 \u51004 \u47196  \u47784 \u45768 \u53552 \u47553 \u54633 \u45768 \u45796 .</p>\
+              </div>\
+\
+              \{/* Stat Cards */\}\
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">\
+                <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5">\
+                  <div className="bg-slate-100 p-4 rounded-full"><FileText className="w-7 h-7 text-slate-700" /></div>\
+                  <div>\
+                    <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">\uc0\u52509  \u50836 \u44396  \u47928 \u49436 </p>\
+                    <p className="text-3xl font-black text-slate-900">\{totalDocs\}<span className="text-lg text-slate-400 font-medium ml-1">\uc0\u44148 </span></p>\
+                  </div>\
+                </div>\
+                <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5">\
+                  <div className="bg-emerald-50 p-4 rounded-full"><CheckCircle className="w-7 h-7 text-emerald-600" /></div>\
+                  <div>\
+                    <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">\uc0\u49849 \u51064 /\u50756 \u47308 </p>\
+                    <p className="text-3xl font-black text-slate-900">\{completedDocs\}<span className="text-lg text-slate-400 font-medium ml-1">\uc0\u44148 </span></p>\
+                  </div>\
+                </div>\
+                <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center gap-5">\
+                  <div className="bg-amber-50 p-4 rounded-full"><Clock className="w-7 h-7 text-amber-600" /></div>\
+                  <div>\
+                    <p className="text-sm text-slate-500 font-bold uppercase tracking-wider mb-1">\uc0\u51652 \u54665 /\u45824 \u44592  \u51473 </p>\
+                    <p className="text-3xl font-black text-slate-900">\{totalDocs - completedDocs\}<span className="text-lg text-slate-400 font-medium ml-1">\uc0\u44148 </span></p>\
+                  </div>\
+                </div>\
+              </div>\
+\
+              \{/* Clause Progress List */\}\
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">\
+                <div className="px-8 py-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">\
+                  <h3 className="font-bold text-slate-800 text-lg">\uc0\u51312 \u54637 \u48324  \u51060 \u54665  \u49345 \u53468  \u49345 \u49464 </h3>\
+                </div>\
+                <div className="divide-y divide-slate-100">\
+                  \{systemData.map(clause => \{\
+                    const clauseTotal = clause.documents.length;\
+                    const clauseCompleted = clause.documents.filter(d => d.status === 'completed' || d.status === 'approved').length;\
+                    const clausePercent = Math.round((clauseCompleted / clauseTotal) * 100) || 0;\
+\
+                    return (\
+                      <div key=\{clause.id\} className="p-8 hover:bg-slate-50 transition-colors">\
+                        <div className="flex justify-between items-end mb-4">\
+                          <h4 className="font-bold text-slate-900 text-lg">\{clause.title\}</h4>\
+                          <div className="flex items-center gap-3">\
+                            <span className="text-sm font-bold text-slate-500">\{clauseCompleted\} / \{clauseTotal\} \uc0\u50756 \u47308 </span>\
+                            <span className=\{`text-sm font-bold px-3 py-1 rounded-full $\{\
+                              clausePercent === 100 ? 'bg-emerald-100 text-emerald-700' : \
+                              clausePercent > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'\
+                            \}`\}>\{clausePercent\}%</span>\
+                          </div>\
+                        </div>\
+                        <div className="w-full bg-slate-200 rounded-full h-2 mb-6 shadow-inner">\
+                          <div className=\{`h-2 rounded-full transition-all duration-500 $\{clausePercent === 100 ? 'bg-emerald-500' : 'bg-indigo-500'\}`\} style=\{\{ width: `$\{clausePercent\}%` \}\}></div>\
+                        </div>\
+                        \
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">\
+                          \{clause.documents.map(doc => (\
+                            <div key=\{doc.id\} className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick=\{() => \{ setActiveClauseId(clause.id); setActiveDocId(doc.id); setViewMode('editor'); \}\}>\
+                              <div className="mt-0.5">\{getStatusIcon(doc.status)\}</div>\
+                              <div className="flex-1 min-w-0">\
+                                <p className="text-sm font-bold text-slate-800 mb-1 leading-tight">\{doc.id\} \{doc.title\}</p>\
+                                <p className=\{`text-xs font-semibold $\{\
+                                  doc.status === 'completed' || doc.status === 'approved' ? 'text-emerald-600' :\
+                                  doc.status === 'in_progress' || doc.status === 'review' ? 'text-amber-600' : 'text-slate-400'\
+                                \}`\}>\{getStatusText(doc.status)\}</p>\
+                              </div>\
+                            </div>\
+                          ))\}\
+                        </div>\
+                      </div>\
+                    )\
+                  \})\}\
+                </div>\
+              </div>\
+\
+            </div>\
+          </main>\
+        )\}\
+      </div>\
+\
+      \{/* Toast Notification */\}\
+      \{toastMessage && (\
+        <div className="fixed bottom-8 right-8 bg-slate-900 text-white px-5 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-fade-in-up z-50 border border-slate-700">\
+          <CheckCircle className="w-5 h-5 text-emerald-400" />\
+          <span className="text-sm font-medium tracking-wide">\{toastMessage\}</span>\
+        </div>\
+      )\}\
+\
+      \{/* Add Document Modal */\}\
+      \{isAddModalOpen && (\
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">\
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">\
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">\
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">\
+                <Plus className="w-5 h-5 text-indigo-600" />\
+                \uc0\u51088 \u49324  \u44508 \u51221 /\u47928 \u49436  \u52628 \u44032 \
+              </h3>\
+              <button onClick=\{() => setIsAddModalOpen(false)\} className="text-slate-400 hover:text-slate-600 transition-colors">\
+                <X className="w-5 h-5" />\
+              </button>\
+            </div>\
+            <div className="p-6 space-y-4">\
+              <div>\
+                <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u47928 \u49436  \u48264 \u54840  / \u49885 \u48324 \u51088  <span className="text-red-500">*</span></label>\
+                <input \
+                  type="text" \
+                  placeholder="\uc0\u50696 : 4.4, \u51648 \u52840 -01, \u51208 \u52264 -\u50504 \u51204 -01" \
+                  value=\{newDoc.id\}\
+                  onChange=\{(e) => setNewDoc(\{...newDoc, id: e.target.value\})\}\
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"\
+                />\
+              </div>\
+              <div>\
+                <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u47928 \u49436  \u51228 \u47785  <span className="text-red-500">*</span></label>\
+                <input \
+                  type="text" \
+                  placeholder="\uc0\u50696 : \u46020 \u44553 \u50629 \u52404  \u50504 \u51204 \u44288 \u47532  \u51208 \u52264 \u49436 " \
+                  value=\{newDoc.title\}\
+                  onChange=\{(e) => setNewDoc(\{...newDoc, title: e.target.value\})\}\
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"\
+                />\
+              </div>\
+              <div>\
+                <label className="block text-sm font-semibold text-slate-700 mb-1">\uc0\u50836 \u44396 \u49324 \u54637  / \u51089 \u49457  \u47785 \u51201 </label>\
+                <textarea \
+                  placeholder="\uc0\u51060  \u47928 \u49436 \u44032  \u51089 \u49457 \u46104 \u50612 \u50556  \u54616 \u45716  \u47785 \u51201 \u51060 \u45208  \u54252 \u54632 \u46104 \u50612 \u50556  \u54624  \u54645 \u49900  \u45236 \u50857 \u51012  \u47700 \u47784 \u54616 \u49464 \u50836 ." \
+                  value=\{newDoc.requirements\}\
+                  onChange=\{(e) => setNewDoc(\{...newDoc, requirements: e.target.value\})\}\
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-24 resize-none"\
+                />\
+              </div>\
+            </div>\
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">\
+              <button \
+                onClick=\{() => setIsAddModalOpen(false)\}\
+                className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors"\
+              >\
+                \uc0\u52712 \u49548 \
+              </button>\
+              <button \
+                onClick=\{handleAddDocument\}\
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 shadow-sm transition-colors"\
+              >\
+                \uc0\u47928 \u49436  \u52628 \u44032 \u54616 \u44592 \
+              </button>\
+            </div>\
+          </div>\
+        </div>\
+      )\}\
+    </div>\
+  );\
+\}}
